@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';  // Su cPanel è quasi sempre localhost
 $dbname = 'jznbfzwq_kitsdb';
-$user = 'jznbfzwq_panoz';  // ← CORRETTO (senza la 'k')
-$pass = 'password123!sdfdgdg';
+$user = 'jznbfzwq_kitsdb';  // ← CORRETTO (senza la 'k')
+$pass = 'LaMaglia+bella!25|db';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
