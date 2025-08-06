@@ -1,6 +1,6 @@
 <?php
 // config.php
-define('DB_HOST', 'nonva-hostingssd79.netsons.net');
+define('DB_HOST', 'hostingssd79.netsons.net');
 define('DB_PORT', '3306');
 define('DB_NAME', 'jznbfkvzq_kitsdb');  // il nome che hai creato
 define('DB_USER', 'jznbfkvzq_kitsdb');          // l’utente MySQL
