@@ -1,0 +1,123 @@
+A) Design System & CSS di Base
+1. Descrizione testuale del Design System
+Palette cromatica
+
+--main-purple: #210B2C; ? usalo su header, footer, sfondi di sezione principali.
+
+--action-red: #DE3C4B; ? bottone principale, link “importanti”, errori.
+
+--highlight-yellow:#DCF763; ? focus, indicatori di stato (tooltip, badge), hover accentuati.
+
+--gray-100: #F5F5F5; ? sfondi secondari, layer di separazione.
+
+--gray-600: #4A4A4A; ? testo body, etichette.
+
+--white: #FFFFFF;
+
+--black: #000000;
+
+Tipografia
+
+font-family: "Inter", sans-serif; ? testi, input, etichette.
+
+font-family: "Playfair Display", serif; ? titoli, header, card heading.
+
+Gerarchia:
+
+H1: 2.5rem, serif
+
+H2: 2rem, serif
+
+H3: 1.5rem, sans
+
+Body: 1rem, sans
+
+Spaziatura generosa: line-height: 1.6, margini verticali = 1rem.
+
+Componenti
+
+Bottoni
+
+css
+Copia
+Modifica
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: opacity .2s ease, transform .15s ease;
+}
+.btn-primary {
+  background: var(--action-red);
+  color: var(--white);
+}
+.btn-primary:hover { opacity: .9; }
+.btn-secondary {
+  background: var(--main-purple);
+  color: var(--white);
+}
+Input & Form
+
+css
+Copia
+Modifica
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-600);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: box-shadow .2s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220,247,99,0.5);
+}
+Cards & Sections
+
+css
+Copia
+Modifica
+.card {
+  background: var(--white);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+}
+.section {
+  padding: 3rem 1rem;
+  background: var(--gray-100);
+}
+Layout & Grid
+
+Usa una container centrale con max-width: 1200px; margin: 0 auto; padding: 0 1rem;.
+
+Internamente una griglia CSS a 12 colonne:
+
+css
+Copia
+Modifica
+.row { display: flex; flex-wrap: wrap; margin: -0.5rem; }
+.col { padding: 0.5rem; flex: 1 0 0; }
+.col-6 { flex: 0 0 50%; }
+.col-4 { flex: 0 0 33.333%; }
+.col-3 { flex: 0 0 25%; }
+Negative space: larga spaziatura tra le sezioni per far “respirare” il contenuto.
+
+Animazioni & Micro-interactions
+
+Fade in su entra in viewport (opacity 0?1).
+
+Slide up leggero sui button (transform: translateY(5px) ? 0).
+
+Hover overlays a 50% opacity con background: rgba(33,11,44,0.5) sugli elementi cliccabili.
+
+Accessibilità
+
+Contrasto testo/sfondo = 4.5:1.
+
+Focus sempre visibile (box-shadow giallo).
+
+Aggiungi aria-label e role sui componenti interattivi.
+

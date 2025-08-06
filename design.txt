@@ -1,0 +1,45 @@
+Design System (estratto per le pagine di login/logout)
+
+Palette
+
+--main-purple: #210B2C (sfondi, header)
+
+--action-red: #DE3C4B (bottoni, link importanti)
+
+--highlight-yellow: #DCF763 (focus, error/ok indicator)
+
+--gray-100: #F5F5F5 (sfondi secondari)
+
+--gray-600: #4A4A4A (testo secondario)
+
+--white: #FFFFFF
+
+--black: #000000
+
+Tipografia
+
+font-family-sans: "Inter", sans-serif; – paragrafi, form
+
+font-family-display: "Playfair Display", serif; – titoli, header
+
+Spaziatura
+
+--space-xs: 0.5rem; --space-sm: 1rem; --space-md: 1.5rem; --space-lg: 2.5rem;
+
+Uso generoso di padding/margini per “white breathing room”
+
+Componenti
+
+Bottoni: background: var(--action-red); color: var(--white); border-radius: .375rem; transition: opacity .2s;
+
+Input: bordo 1px var(--gray-600), focus box-shadow: 0 0 0 3px var(--highlight-yellow)
+
+Errori/Help text: colore var(--action-red) o var(--highlight-yellow)
+
+Layout
+
+Griglia fluida a 12 colonne.
+
+Header fisso in alto, logo a sinistra, link “Logout” a destra (solo dopo login).
+
+Hero minimal: titolo + sottotitolo + form login centrato.
