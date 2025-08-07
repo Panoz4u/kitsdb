@@ -70,6 +70,11 @@ try {
             $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
             break;
             
+        case 'seasons':
+            $stmt = $db->query("SELECT season_id as id, name FROM seasons ORDER BY name DESC");
+            $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            break;
+            
         default:
             http_response_code(400);
             $response = ['error' => 'Invalid lookup type'];

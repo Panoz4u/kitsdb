@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $color3_id = intval($_POST['color3_id'] ?? 0) ?: null;
         $notes = trim($_POST['notes'] ?? '');
         
-        if ($team_id <= 0 || empty($season) || $number < 0) {
-            throw new Exception('Campi obbligatori mancanti o non validi.');
+        if ($team_id <= 0) {
+            throw new Exception('Team is required.');
         }
         
         // Inserimento kit
@@ -192,42 +192,44 @@ $user = getCurrentUser();
 
         <form method="POST" enctype="multipart/form-data" id="kitForm">
             <div class="form-grid">
-                <!-- Squadra con autocomplete -->
+                <!-- Team with autocomplete -->
                 <div class="form-group">
-                    <label for="team_search">Squadra *</label>
+                    <label for="team_search">Team *</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="team_search" placeholder="Cerca squadra..." required>
+                        <input type="text" id="team_search" placeholder="Search team..." required>
                         <div class="autocomplete-suggestions" id="team_suggestions" style="display: none;"></div>
                     </div>
                     <input type="hidden" name="team_id" id="team_id" required>
                 </div>
 
-                <!-- Stagione -->
+                <!-- Season -->
                 <div class="form-group">
-                    <label for="season">Stagione *</label>
-                    <input type="text" id="season" name="season" placeholder="es. 2023-24" required>
+                    <label for="season">Season</label>
+                    <select name="season" id="season">
+                        <option value="" style="opacity: 0.6;">Select season...</option>
+                    </select>
                 </div>
 
-                <!-- Numero e Giocatore -->
+                <!-- Number and Player -->
                 <div class="form-group">
                     <div class="inline-group">
                         <div class="form-group small">
-                            <label for="number">Numero *</label>
-                            <input type="number" id="number" name="number" min="0" max="99" required>
+                            <label for="number">Number</label>
+                            <input type="number" id="number" name="number" min="0" max="99" placeholder="0">
                         </div>
                         <div class="form-group">
-                            <label for="player_name">Nome Giocatore</label>
-                            <input type="text" id="player_name" name="player_name" placeholder="Nome del giocatore">
+                            <label for="player_name">Player Name</label>
+                            <input type="text" id="player_name" name="player_name" placeholder="Player name">
                         </div>
                     </div>
                 </div>
 
-                <!-- Maniche -->
+                <!-- Sleeves -->
                 <div class="form-group">
-                    <label>Maniche</label>
+                    <label>Sleeves</label>
                     <div class="size-selector">
-                        <button type="button" class="size-btn" data-value="Short">Corte</button>
-                        <button type="button" class="size-btn" data-value="Long">Lunghe</button>
+                        <button type="button" class="size-btn" data-value="Short">Short</button>
+                        <button type="button" class="size-btn" data-value="Long">Long</button>
                     </div>
                     <input type="hidden" name="sleeves" id="sleeves" value="Short">
                 </div>
@@ -236,125 +238,121 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="brand_id">Brand</label>
                     <select name="brand_id" id="brand_id">
-                        <option value="">Seleziona brand...</option>
+                        <option value="">Select brand...</option>
                     </select>
                 </div>
 
-                <!-- Categoria -->
+                <!-- Category -->
                 <div class="form-group">
-                    <label for="category_id">Categoria</label>
+                    <label for="category_id">Category</label>
                     <select name="category_id" id="category_id">
-                        <option value="">Seleziona categoria...</option>
+                        <option value="">Select category...</option>
                     </select>
                 </div>
 
-                <!-- Tipo Maglia -->
+                <!-- Jersey Type -->
                 <div class="form-group">
-                    <label for="jersey_type_id">Tipo Maglia</label>
+                    <label for="jersey_type_id">Jersey Type</label>
                     <select name="jersey_type_id" id="jersey_type_id">
-                        <option value="">Seleziona tipo...</option>
+                        <option value="">Select type...</option>
                     </select>
                 </div>
 
-                <!-- Condizione -->
+                <!-- Condition -->
                 <div class="form-group">
-                    <label for="condition_id">Condizione</label>
+                    <label for="condition_id">Condition</label>
                     <select name="condition_id" id="condition_id">
-                        <option value="">Seleziona condizione...</option>
+                        <option value="">Select condition...</option>
                     </select>
                 </div>
 
-                <!-- Taglie -->
+                <!-- Sizes -->
                 <div class="form-group full-width">
-                    <label>Taglia</label>
+                    <label>Size</label>
                     <div class="size-selector" id="size-selector">
-                        <!-- Caricate via JS -->
+                        <!-- Loaded via JS -->
                     </div>
                     <input type="hidden" name="size_id" id="size_id">
                 </div>
 
-                <!-- Colori -->
+                <!-- Colors -->
                 <div class="form-group">
-                    <label for="color1_id">Colore Primario</label>
-                    <select name="color1_id" id="color1_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color1_id">Primary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color1_id" id="color1_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color1_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #333;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color2_id">Colore Secondario</label>
-                    <select name="color2_id" id="color2_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color2_id">Secondary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color2_id" id="color2_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color2_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #fff;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color3_id">Colore Terziario</label>
-                    <select name="color3_id" id="color3_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color3_id">Tertiary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color3_id" id="color3_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color3_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: transparent;"></div>
+                    </div>
                 </div>
 
-                <!-- Note -->
+                <!-- Notes -->
                 <div class="form-group full-width">
-                    <label for="notes">Note</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."></textarea>
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
                 </div>
             </div>
 
             <!-- Preview SVG Live -->
             <div class="svg-preview-container">
-                <h3>Anteprima Maglia</h3>
+                <h3>Jersey Preview</h3>
                 <div id="live-preview">
                     <svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
-                        <!-- SVG preview template -->
                         <defs>
-                            <linearGradient id="shirtGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" id="gradientStart" style="stop-color:#333333;stop-opacity:1" />
-                                <stop offset="100%" id="gradientEnd" style="stop-color:#333333;stop-opacity:0.8" />
-                            </linearGradient>
                             <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
                                 <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
                             </filter>
                         </defs>
                         
-                        <!-- Background -->
+                        <!-- Background circle -->
                         <circle cx="100" cy="120" r="90" fill="rgba(0,0,0,0.1)" opacity="0.3"/>
                         
-                        <!-- Shirt body -->
+                        <!-- Jersey body (primary color) -->
                         <path d="M 60 80 L 60 200 L 140 200 L 140 80 L 130 70 L 120 60 L 80 60 L 70 70 Z" 
-                              id="shirtBody" fill="url(#shirtGradient)" stroke="rgba(0,0,0,0.2)" stroke-width="1" filter="url(#shadow)"/>
+                              id="shirtBody" fill="#333333" stroke="rgba(0,0,0,0.2)" stroke-width="1" filter="url(#shadow)"/>
                         
-                        <!-- Sleeves -->
+                        <!-- Sleeves (primary color) -->
                         <ellipse cx="50" cy="85" rx="12" ry="25" id="leftSleeve" fill="#333333" opacity="0.9"/>
                         <ellipse cx="150" cy="85" rx="12" ry="25" id="rightSleeve" fill="#333333" opacity="0.9"/>
                         
-                        <!-- Collar -->
+                        <!-- Collar (primary color) -->
                         <path d="M 85 60 L 85 50 C 90 45, 110 45, 115 50 L 115 60 Z" 
-                              id="collar" fill="#ffffff" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+                              id="collar" fill="#333333" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
                         
-                        <!-- Number -->
-                        <text x="100" y="140" id="shirtNumber" font-family="Arial, sans-serif" font-size="36" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff" stroke="rgba(0,0,0,0.3)" stroke-width="0.5">
-                            0
-                        </text>
+                        <!-- Number area (secondary color) -->
+                        <rect x="70" y="100" width="60" height="80" id="numberArea" 
+                              fill="#ffffff" rx="8" opacity="0.9"/>
                         
                         <!-- Player name -->
-                        <text x="100" y="170" id="playerName" font-family="Arial, sans-serif" font-size="10" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff" opacity="0.8">
+                        <text x="100" y="125" id="playerName" font-family="Arial, sans-serif" font-size="12" 
+                              font-weight="bold" text-anchor="middle" fill="#000000">
                         </text>
                         
-                        <!-- Side stripes -->
-                        <rect x="65" y="80" width="3" height="120" id="leftStripe" fill="#ffffff" style="display:none"/>
-                        <rect x="132" y="80" width="3" height="120" id="rightStripe" fill="#ffffff" style="display:none"/>
-                        
-                        <!-- Sleeve details -->
-                        <ellipse cx="50" cy="110" rx="12" ry="3" id="leftSleeveDetail" fill="#ffffff" style="display:none"/>
-                        <ellipse cx="150" cy="110" rx="12" ry="3" id="rightSleeveDetail" fill="#ffffff" style="display:none"/>
-                        
-                        <!-- Accent details -->
-                        <rect x="95" y="65" width="10" height="2" id="topAccent" fill="#cccccc" style="display:none"/>
-                        <rect x="85" y="195" width="30" height="2" id="bottomAccent" fill="#cccccc" style="display:none"/>
+                        <!-- Number -->
+                        <text x="100" y="155" id="shirtNumber" font-family="Arial, sans-serif" font-size="32" 
+                              font-weight="bold" text-anchor="middle" fill="#000000">
+                            0
+                        </text>
                         
                         <!-- Shine effect -->
                         <path d="M 70 70 L 80 60 L 120 60 L 130 70 L 125 75 L 115 65 L 85 65 L 75 75 Z" 
@@ -363,26 +361,26 @@ $user = getCurrentUser();
                 </div>
             </div>
 
-            <!-- Upload Foto -->
+            <!-- Upload Photos -->
             <div class="photo-upload-section">
-                <h3>Carica Foto</h3>
+                <h3>Upload Photos</h3>
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">
-                        Trascina le foto qui o clicca per selezionare<br>
-                        <small>Formati supportati: JPG, PNG, GIF (max 5MB)</small>
+                        Drag photos here or click to select<br>
+                        <small>Supported formats: JPG, PNG, GIF (max 5MB)</small>
                     </div>
                     <input type="file" id="photo-input" name="photos[]" multiple accept="image/*" style="display: none;">
                 </div>
                 
                 <div class="uploaded-photos" id="uploaded-photos">
-                    <!-- File caricati mostrati qui -->
+                    <!-- Uploaded files shown here -->
                 </div>
             </div>
 
             <div style="text-align: center; margin-top: var(--space-lg);">
-                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Salva Maglia</button>
-                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Annulla</a>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Save Jersey</button>
+                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</a>
             </div>
         </form>
     </div>
@@ -398,7 +396,7 @@ $user = getCurrentUser();
     });
 
     function loadLookupData() {
-        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors'];
+        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons'];
         
         lookupTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
@@ -408,6 +406,10 @@ $user = getCurrentUser();
                         populateSizes(data);
                     } else if (type === 'conditions') {
                         populateConditions(data);
+                    } else if (type === 'jersey_types') {
+                        populateJerseyTypes(data);
+                    } else if (type === 'colors') {
+                        populateColors(data);
                     } else {
                         populateSelect(type, data);
                     }
@@ -419,9 +421,8 @@ $user = getCurrentUser();
     function populateSelect(type, data) {
         const selectMap = {
             'brands': 'brand_id',
-            'categories': 'category_id', 
-            'jersey_types': 'jersey_type_id',
-            'colors': 'color1_id,color2_id,color3_id'
+            'categories': 'category_id',
+            'seasons': 'season'
         };
         
         const selectIds = selectMap[type].split(',');
@@ -431,7 +432,7 @@ $user = getCurrentUser();
             if (select && Array.isArray(data)) {
                 data.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item.id;
+                    option.value = type === 'seasons' ? item.name : item.id;
                     option.textContent = item.name;
                     select.appendChild(option);
                 });
@@ -439,11 +440,73 @@ $user = getCurrentUser();
         });
     }
 
+    function populateJerseyTypes(data) {
+        const select = document.getElementById('jersey_type_id');
+        
+        // Custom order: Home, Away, Third, Other
+        const customOrder = ['Home', 'Away', 'Third', 'Other'];
+        const sortedData = data.sort((a, b) => {
+            const aIndex = customOrder.indexOf(a.name);
+            const bIndex = customOrder.indexOf(b.name);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        sortedData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            select.appendChild(option);
+        });
+    }
+
+    function populateColors(data) {
+        const colorSelects = ['color1_id', 'color2_id', 'color3_id'];
+        
+        colorSelects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            
+            data.forEach(color => {
+                const option = document.createElement('option');
+                option.value = color.id;
+                option.textContent = color.name;
+                option.dataset.hex = color.hex;
+                select.appendChild(option);
+            });
+            
+            // Add change listener to update color swatch
+            select.addEventListener('change', function() {
+                const swatchId = selectId.replace('_id', '_swatch');
+                const swatch = document.getElementById(swatchId);
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.dataset.hex) {
+                    swatch.style.background = selectedOption.dataset.hex;
+                } else {
+                    swatch.style.background = 'transparent';
+                }
+            });
+        });
+    }
+
     function populateSizes(data) {
         const container = document.getElementById('size-selector');
         container.innerHTML = '';
         
-        data.forEach(size => {
+        // Custom order with YTH before XS
+        const customOrder = ['YTH', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        const sortedData = data.sort((a, b) => {
+            const aIndex = customOrder.indexOf(a.name);
+            const bIndex = customOrder.indexOf(b.name);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        sortedData.forEach(size => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'size-btn';
@@ -593,129 +656,117 @@ $user = getCurrentUser();
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
         
+        // Create hidden file input for this specific file
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'file';
+        hiddenInput.name = 'photos[]';
+        hiddenInput.style.display = 'none';
+        
+        // Transfer the file to the hidden input
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        hiddenInput.files = dataTransfer.files;
+        
         fileItem.innerHTML = `
             <img src="${src}" alt="${file.name}" class="file-thumbnail">
             <div class="file-info">
                 <input type="text" 
                        name="photo_titles[]" 
-                       placeholder="Nome foto..." 
+                       placeholder="Photo name..." 
                        class="file-name-input">
                 <select name="photo_types[]" class="file-name-input">
-                    <option value="front">Fronte</option>
-                    <option value="back">Retro</option>
+                    <option value="front">Front</option>
+                    <option value="back">Back</option>
                     <option value="extra">Extra</option>
                 </select>
                 <select name="photo_classifications[]" class="file-name-input">
                     <option value="1">Match</option>
                     <option value="2">Web</option>
                     <option value="3">Store</option>
-                    <option value="4">Altro</option>
+                    <option value="4">Other</option>
                 </select>
-                <button type="button" onclick="this.parentElement.parentElement.remove()" 
+                <button type="button" onclick="removeFileItem(this)" 
                         style="background: var(--action-red); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">
-                    Rimuovi
+                    Remove
                 </button>
             </div>
         `;
         
+        // Append the hidden input
+        fileItem.appendChild(hiddenInput);
+        
         return fileItem;
     }
 
+    function removeFileItem(button) {
+        button.closest('.file-item').remove();
+    }
+
     function setupLivePreview() {
-        // Elementi form che influenzano la preview
+        // Form elements that affect preview
         const numberInput = document.getElementById('number');
         const playerInput = document.getElementById('player_name');
         const color1Select = document.getElementById('color1_id');
         const color2Select = document.getElementById('color2_id');
         const color3Select = document.getElementById('color3_id');
         
-        // Funzione per aggiornare la preview
+        // Function to update preview
         function updatePreview() {
             const number = numberInput.value || '0';
-            const playerName = playerInput.value.toUpperCase().substring(0, 12);
+            let playerName = playerInput.value.toUpperCase();
             
-            // Aggiorna numero
+            // Truncate player name if longer than 7 characters
+            if (playerName.length > 7) {
+                playerName = playerName.substring(0, 7) + '.';
+            }
+            
+            // Update number
             document.getElementById('shirtNumber').textContent = number;
             
-            // Aggiorna nome giocatore
+            // Update player name (above number)
             const playerNameElement = document.getElementById('playerName');
             playerNameElement.textContent = playerName;
             
-            // Ottieni colori selezionati
-            const color1 = getSelectedColor(color1Select) || '#333333';
-            const color2 = getSelectedColor(color2Select) || '#ffffff';
-            const color3 = getSelectedColor(color3Select) || color2;
+            // Get selected colors using hex from database
+            const color1 = getSelectedColorHex(color1Select) || '#333333'; // Primary
+            const color2 = getSelectedColorHex(color2Select) || '#ffffff'; // Secondary
+            const color3 = getSelectedColorHex(color3Select) || color2;    // Tertiary
             
-            // Aggiorna colori della maglia
-            document.getElementById('gradientStart').style.stopColor = color1;
-            document.getElementById('gradientEnd').style.stopColor = color1;
+            // Update jersey colors (primary for body)
+            document.getElementById('shirtBody').setAttribute('fill', color1);
             document.getElementById('leftSleeve').setAttribute('fill', color1);
             document.getElementById('rightSleeve').setAttribute('fill', color1);
-            document.getElementById('collar').setAttribute('fill', color3);
+            document.getElementById('collar').setAttribute('fill', color1);
             
-            // Calcola colore del numero
-            const textColor = getContrastColor(color1);
+            // Update number area (secondary color)
+            document.getElementById('numberArea').setAttribute('fill', color2);
+            
+            // Calculate text color for number and name
+            const textColor = getContrastColor(color2);
             document.getElementById('shirtNumber').setAttribute('fill', textColor);
             document.getElementById('playerName').setAttribute('fill', textColor);
-            
-            // Mostra/nascondi dettagli colore secondario
-            if (color2 !== color1) {
-                document.getElementById('leftStripe').style.display = 'block';
-                document.getElementById('rightStripe').style.display = 'block';
-                document.getElementById('leftSleeveDetail').style.display = 'block';
-                document.getElementById('rightSleeveDetail').style.display = 'block';
-                
-                document.getElementById('leftStripe').setAttribute('fill', color2);
-                document.getElementById('rightStripe').setAttribute('fill', color2);
-                document.getElementById('leftSleeveDetail').setAttribute('fill', color2);
-                document.getElementById('rightSleeveDetail').setAttribute('fill', color2);
-            } else {
-                document.getElementById('leftStripe').style.display = 'none';
-                document.getElementById('rightStripe').style.display = 'none';
-                document.getElementById('leftSleeveDetail').style.display = 'none';
-                document.getElementById('rightSleeveDetail').style.display = 'none';
-            }
-            
-            // Mostra dettagli colore terziario
-            if (color3 !== color1 && color3 !== color2) {
-                document.getElementById('topAccent').style.display = 'block';
-                document.getElementById('bottomAccent').style.display = 'block';
-                document.getElementById('topAccent').setAttribute('fill', color3);
-                document.getElementById('bottomAccent').setAttribute('fill', color3);
-            } else {
-                document.getElementById('topAccent').style.display = 'none';
-                document.getElementById('bottomAccent').style.display = 'none';
-            }
         }
         
-        function getSelectedColor(selectElement) {
+        function getSelectedColorHex(selectElement) {
             if (!selectElement.value) return null;
             
             const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const optionText = selectedOption.textContent;
-            
-            // Cerca se c'è un hex nel nome del colore (formato semplice)
-            const colorMap = {
-                'rosso': '#dc3545', 'red': '#dc3545',
-                'blu': '#0d6efd', 'blue': '#0d6efd',
-                'verde': '#198754', 'green': '#198754',
-                'giallo': '#ffc107', 'yellow': '#ffc107',
-                'nero': '#000000', 'black': '#000000',
-                'bianco': '#ffffff', 'white': '#ffffff',
-                'arancione': '#fd7e14', 'orange': '#fd7e14',
-                'viola': '#6f42c1', 'purple': '#6f42c1',
-                'grigio': '#6c757d', 'gray': '#6c757d'
-            };
-            
-            const colorName = optionText.toLowerCase();
-            return colorMap[colorName] || '#333333';
+            return selectedOption.dataset.hex || null;
         }
         
         function getContrastColor(backgroundColor) {
-            if (backgroundColor === '#ffffff' || backgroundColor === '#ffc107' || backgroundColor === '#fd7e14') {
-                return '#000000';
-            }
-            return '#ffffff';
+            if (!backgroundColor) return '#000000';
+            
+            // Convert hex to RGB
+            const hex = backgroundColor.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            return luminance > 0.5 ? '#000000' : '#ffffff';
         }
         
         // Event listeners
@@ -725,7 +776,7 @@ $user = getCurrentUser();
         color2Select.addEventListener('change', updatePreview);
         color3Select.addEventListener('change', updatePreview);
         
-        // Aggiornamento iniziale
+        // Initial update
         updatePreview();
     }
     </script>
