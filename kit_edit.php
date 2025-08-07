@@ -6,12 +6,49 @@ requireAdmin();
 
 $error = '';
 $success = '';
+$kit_id = intval($_GET['id'] ?? 0);
+
+if ($kit_id <= 0) {
+    header('Location: kits_list.php');
+    exit();
+}
+
+try {
+    $db = getDb();
+    
+    // Carica dati maglia esistente
+    $stmt = $db->prepare("
+        SELECT k.*, t.name as team_name, t.FMID 
+        FROM kits k 
+        LEFT JOIN teams t ON k.team_id = t.team_id 
+        WHERE k.kit_id = ?
+    ");
+    $stmt->execute([$kit_id]);
+    $kit = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$kit) {
+        header('Location: kits_list.php');
+        exit();
+    }
+    
+    // Carica foto esistenti
+    $photoStmt = $db->prepare("
+        SELECT p.*, pc.name as classification_name 
+        FROM photos p 
+        LEFT JOIN photo_classifications pc ON p.classification_id = pc.classification_id 
+        WHERE p.kit_id = ?
+    ");
+    $photoStmt->execute([$kit_id]);
+    $existing_photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+} catch (PDOException $e) {
+    $error = 'Errore nel caricamento dei dati: ' . $e->getMessage();
+    $kit = null;
+}
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
     try {
-        $db = getDb();
-        
         // Validazione base
         $team_id = intval($_POST['team_id'] ?? 0);
         $season = trim($_POST['season'] ?? '');
@@ -32,23 +69,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Campi obbligatori mancanti o non validi.');
         }
         
-        // Inserimento kit
+        // Aggiornamento kit
         $stmt = $db->prepare("
-            INSERT INTO kits (team_id, season, number, player_name, brand_id, size_id, 
-                            sleeves, condition_id, jersey_type_id, category_id, 
-                            color1_id, color2_id, color3_id, notes, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            UPDATE kits SET 
+                team_id = ?, season = ?, number = ?, player_name = ?, brand_id = ?, 
+                size_id = ?, sleeves = ?, condition_id = ?, jersey_type_id = ?, 
+                category_id = ?, color1_id = ?, color2_id = ?, color3_id = ?, 
+                notes = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE kit_id = ?
         ");
         
         $stmt->execute([
             $team_id, $season, $number, $player_name, $brand_id, $size_id,
             $sleeves, $condition_id, $jersey_type_id, $category_id,
-            $color1_id, $color2_id, $color3_id, $notes
+            $color1_id, $color2_id, $color3_id, $notes, $kit_id
         ]);
         
-        $kit_id = $db->lastInsertId();
+        // Gestione eliminazione foto
+        if (!empty($_POST['delete_photos'])) {
+            foreach ($_POST['delete_photos'] as $photo_id) {
+                $photo_id = intval($photo_id);
+                
+                // Ottieni il nome del file prima di eliminarlo
+                $photoStmt = $db->prepare("SELECT filename FROM photos WHERE photo_id = ? AND kit_id = ?");
+                $photoStmt->execute([$photo_id, $kit_id]);
+                $photo = $photoStmt->fetch();
+                
+                if ($photo) {
+                    // Elimina il file fisico
+                    $filePaths = [
+                        __DIR__ . '/uploads/front/' . $photo['filename'],
+                        __DIR__ . '/uploads/back/' . $photo['filename'],
+                        __DIR__ . '/uploads/extra/' . $photo['filename']
+                    ];
+                    
+                    foreach ($filePaths as $filePath) {
+                        if (file_exists($filePath)) {
+                            unlink($filePath);
+                            break;
+                        }
+                    }
+                    
+                    // Elimina dal database
+                    $deleteStmt = $db->prepare("DELETE FROM photos WHERE photo_id = ? AND kit_id = ?");
+                    $deleteStmt->execute([$photo_id, $kit_id]);
+                }
+            }
+        }
         
-        // Gestione upload foto
+        // Gestione nuove foto
         if (!empty($_FILES['photos']['name'][0])) {
             $uploadDir = __DIR__ . '/upload_tmp/';
             
@@ -59,27 +128,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $photoTitle = trim($_POST['photo_titles'][$i] ?? '');
                     $classificationId = intval($_POST['photo_classifications'][$i] ?? 0) ?: null;
                     
-                    // Genera nome file sicuro
                     $extension = pathinfo($originalName, PATHINFO_EXTENSION);
                     $safeFilename = 'kit_' . $kit_id . '_' . time() . '_' . $i . '.' . strtolower($extension);
                     
-                    // Sposta in upload_tmp prima
                     $tempPath = $uploadDir . $safeFilename;
                     
                     if (move_uploaded_file($tmpName, $tempPath)) {
-                        // Determina destinazione finale basata sul tipo
                         $photoType = $_POST['photo_types'][$i] ?? 'extra';
                         $finalDir = __DIR__ . '/uploads/' . $photoType . '/';
                         $finalPath = $finalDir . $safeFilename;
                         
-                        // Crea directory se non esistente
                         if (!file_exists($finalDir)) {
                             mkdir($finalDir, 0755, true);
                         }
                         
-                        // Sposta alla destinazione finale
                         if (rename($tempPath, $finalPath)) {
-                            // Salva nel database
                             $photoStmt = $db->prepare("
                                 INSERT INTO photos (kit_id, filename, title, classification_id, uploaded_at) 
                                 VALUES (?, ?, ?, ?, NOW())
@@ -91,13 +154,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        $success = "Maglia aggiunta con successo! ID: $kit_id";
+        $success = "Maglia aggiornata con successo!";
         
-        // Reset form dopo successo
-        if ($success) {
-            header("Location: kits_list.php");
-            exit();
-        }
+        // Ricarica i dati aggiornati
+        $stmt = $db->prepare("
+            SELECT k.*, t.name as team_name, t.FMID 
+            FROM kits k 
+            LEFT JOIN teams t ON k.team_id = t.team_id 
+            WHERE k.kit_id = ?
+        ");
+        $stmt->execute([$kit_id]);
+        $kit = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Ricarica foto
+        $photoStmt = $db->prepare("
+            SELECT p.*, pc.name as classification_name 
+            FROM photos p 
+            LEFT JOIN photo_classifications pc ON p.classification_id = pc.classification_id 
+            WHERE p.kit_id = ?
+        ");
+        $photoStmt->execute([$kit_id]);
+        $existing_photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
         
     } catch (Exception $e) {
         $error = $e->getMessage();
@@ -111,7 +188,7 @@ $user = getCurrentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aggiungi Maglia - KITSDB</title>
+    <title>Modifica Maglia - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .form-grid {
@@ -136,6 +213,34 @@ $user = getCurrentUser();
         
         .inline-group .form-group.small {
             flex: 0 0 100px;
+        }
+        
+        .existing-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .existing-photo-item {
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .existing-photo-item.marked-for-deletion {
+            opacity: 0.5;
+            border-color: var(--action-red);
+        }
+        
+        .delete-photo-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            transform: scale(1.2);
         }
         
         .photo-upload-section {
@@ -170,7 +275,7 @@ $user = getCurrentUser();
             <a href="dashboard.php" class="logo">KITSDB</a>
             <nav class="nav-menu">
                 <a href="kits_list.php" class="nav-link">Lista Maglie</a>
-                <a href="kit_add.php" class="nav-link" style="color: var(--highlight-yellow);">Aggiungi Maglia</a>
+                <a href="kit_add.php" class="nav-link">Aggiungi Maglia</a>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -180,32 +285,37 @@ $user = getCurrentUser();
 
     <!-- Main Content -->
     <div class="container">
-        <h1>Aggiungi Nuova Maglia</h1>
+        <h1>Modifica Maglia #<?php echo $kit_id; ?></h1>
         
         <?php if ($error): ?>
             <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
         <?php if ($success): ?>
-            <div class="success-message"><?php echo htmlspecialchars($success); ?></div>
+            <div class="card" style="background: rgba(220, 247, 99, 0.1); border: 1px solid var(--highlight-yellow); margin-bottom: var(--space-lg);">
+                <?php echo htmlspecialchars($success); ?>
+            </div>
         <?php endif; ?>
 
+        <?php if ($kit): ?>
         <form method="POST" enctype="multipart/form-data" id="kitForm">
             <div class="form-grid">
                 <!-- Squadra con autocomplete -->
                 <div class="form-group">
                     <label for="team_search">Squadra *</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="team_search" placeholder="Cerca squadra..." required>
+                        <input type="text" id="team_search" placeholder="Cerca squadra..." required 
+                               value="<?php echo htmlspecialchars($kit['team_name']); ?>">
                         <div class="autocomplete-suggestions" id="team_suggestions" style="display: none;"></div>
                     </div>
-                    <input type="hidden" name="team_id" id="team_id" required>
+                    <input type="hidden" name="team_id" id="team_id" value="<?php echo $kit['team_id']; ?>" required>
                 </div>
 
                 <!-- Stagione -->
                 <div class="form-group">
                     <label for="season">Stagione *</label>
-                    <input type="text" id="season" name="season" placeholder="es. 2023-24" required>
+                    <input type="text" id="season" name="season" placeholder="es. 2023-24" required
+                           value="<?php echo htmlspecialchars($kit['season']); ?>">
                 </div>
 
                 <!-- Numero e Giocatore -->
@@ -213,11 +323,13 @@ $user = getCurrentUser();
                     <div class="inline-group">
                         <div class="form-group small">
                             <label for="number">Numero *</label>
-                            <input type="number" id="number" name="number" min="0" max="99" required>
+                            <input type="number" id="number" name="number" min="0" max="99" required
+                                   value="<?php echo $kit['number']; ?>">
                         </div>
                         <div class="form-group">
                             <label for="player_name">Nome Giocatore</label>
-                            <input type="text" id="player_name" name="player_name" placeholder="Nome del giocatore">
+                            <input type="text" id="player_name" name="player_name" placeholder="Nome del giocatore"
+                                   value="<?php echo htmlspecialchars($kit['player_name'] ?? ''); ?>">
                         </div>
                     </div>
                 </div>
@@ -226,10 +338,10 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label>Maniche</label>
                     <div class="size-selector">
-                        <button type="button" class="size-btn" data-value="Short">Corte</button>
-                        <button type="button" class="size-btn" data-value="Long">Lunghe</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Short' ? 'active' : ''; ?>" data-value="Short">Corte</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Long' ? 'active' : ''; ?>" data-value="Long">Lunghe</button>
                     </div>
-                    <input type="hidden" name="sleeves" id="sleeves" value="Short">
+                    <input type="hidden" name="sleeves" id="sleeves" value="<?php echo $kit['sleeves']; ?>">
                 </div>
 
                 <!-- Brand -->
@@ -270,7 +382,7 @@ $user = getCurrentUser();
                     <div class="size-selector" id="size-selector">
                         <!-- Caricate via JS -->
                     </div>
-                    <input type="hidden" name="size_id" id="size_id">
+                    <input type="hidden" name="size_id" id="size_id" value="<?php echo $kit['size_id']; ?>">
                 </div>
 
                 <!-- Colori -->
@@ -298,74 +410,57 @@ $user = getCurrentUser();
                 <!-- Note -->
                 <div class="form-group full-width">
                     <label for="notes">Note</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."></textarea>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
                 </div>
             </div>
 
-            <!-- Preview SVG Live -->
-            <div class="svg-preview-container">
-                <h3>Anteprima Maglia</h3>
-                <div id="live-preview">
-                    <svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
-                        <!-- SVG preview template -->
-                        <defs>
-                            <linearGradient id="shirtGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" id="gradientStart" style="stop-color:#333333;stop-opacity:1" />
-                                <stop offset="100%" id="gradientEnd" style="stop-color:#333333;stop-opacity:0.8" />
-                            </linearGradient>
-                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
-                            </filter>
-                        </defs>
+            <!-- Foto Esistenti -->
+            <?php if (!empty($existing_photos)): ?>
+            <div class="section">
+                <h3>Foto Esistenti</h3>
+                <div class="existing-photos">
+                    <?php foreach ($existing_photos as $photo): ?>
+                    <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>">
+                        <input type="checkbox" name="delete_photos[]" value="<?php echo $photo['photo_id']; ?>" 
+                               class="delete-photo-checkbox" onchange="togglePhotoDelete(<?php echo $photo['photo_id']; ?>)">
                         
-                        <!-- Background -->
-                        <circle cx="100" cy="120" r="90" fill="rgba(0,0,0,0.1)" opacity="0.3"/>
+                        <?php
+                        $photoPath = null;
+                        $possiblePaths = [
+                            'uploads/front/' . $photo['filename'],
+                            'uploads/back/' . $photo['filename'], 
+                            'uploads/extra/' . $photo['filename']
+                        ];
+                        foreach ($possiblePaths as $path) {
+                            if (file_exists(__DIR__ . '/' . $path)) {
+                                $photoPath = $path;
+                                break;
+                            }
+                        }
+                        ?>
                         
-                        <!-- Shirt body -->
-                        <path d="M 60 80 L 60 200 L 140 200 L 140 80 L 130 70 L 120 60 L 80 60 L 70 70 Z" 
-                              id="shirtBody" fill="url(#shirtGradient)" stroke="rgba(0,0,0,0.2)" stroke-width="1" filter="url(#shadow)"/>
+                        <?php if ($photoPath): ?>
+                            <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Foto'); ?>" class="file-thumbnail">
+                        <?php else: ?>
+                            <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
+                                📷 <br><small>File non trovato</small>
+                            </div>
+                        <?php endif; ?>
                         
-                        <!-- Sleeves -->
-                        <ellipse cx="50" cy="85" rx="12" ry="25" id="leftSleeve" fill="#333333" opacity="0.9"/>
-                        <ellipse cx="150" cy="85" rx="12" ry="25" id="rightSleeve" fill="#333333" opacity="0.9"/>
-                        
-                        <!-- Collar -->
-                        <path d="M 85 60 L 85 50 C 90 45, 110 45, 115 50 L 115 60 Z" 
-                              id="collar" fill="#ffffff" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
-                        
-                        <!-- Number -->
-                        <text x="100" y="140" id="shirtNumber" font-family="Arial, sans-serif" font-size="36" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff" stroke="rgba(0,0,0,0.3)" stroke-width="0.5">
-                            0
-                        </text>
-                        
-                        <!-- Player name -->
-                        <text x="100" y="170" id="playerName" font-family="Arial, sans-serif" font-size="10" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff" opacity="0.8">
-                        </text>
-                        
-                        <!-- Side stripes -->
-                        <rect x="65" y="80" width="3" height="120" id="leftStripe" fill="#ffffff" style="display:none"/>
-                        <rect x="132" y="80" width="3" height="120" id="rightStripe" fill="#ffffff" style="display:none"/>
-                        
-                        <!-- Sleeve details -->
-                        <ellipse cx="50" cy="110" rx="12" ry="3" id="leftSleeveDetail" fill="#ffffff" style="display:none"/>
-                        <ellipse cx="150" cy="110" rx="12" ry="3" id="rightSleeveDetail" fill="#ffffff" style="display:none"/>
-                        
-                        <!-- Accent details -->
-                        <rect x="95" y="65" width="10" height="2" id="topAccent" fill="#cccccc" style="display:none"/>
-                        <rect x="85" y="195" width="30" height="2" id="bottomAccent" fill="#cccccc" style="display:none"/>
-                        
-                        <!-- Shine effect -->
-                        <path d="M 70 70 L 80 60 L 120 60 L 130 70 L 125 75 L 115 65 L 85 65 L 75 75 Z" 
-                              fill="rgba(255,255,255,0.2)" opacity="0.6"/>
-                    </svg>
+                        <div class="file-info">
+                            <div><strong><?php echo htmlspecialchars($photo['title'] ?: $photo['filename']); ?></strong></div>
+                            <div><small><?php echo htmlspecialchars($photo['classification_name'] ?? 'N/A'); ?></small></div>
+                            <div><small>Caricata: <?php echo date('d/m/Y H:i', strtotime($photo['uploaded_at'])); ?></small></div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <!-- Upload Foto -->
+            <!-- Upload Nuove Foto -->
             <div class="photo-upload-section">
-                <h3>Carica Foto</h3>
+                <h3>Aggiungi Nuove Foto</h3>
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">
@@ -376,26 +471,38 @@ $user = getCurrentUser();
                 </div>
                 
                 <div class="uploaded-photos" id="uploaded-photos">
-                    <!-- File caricati mostrati qui -->
+                    <!-- Nuovi file caricati mostrati qui -->
                 </div>
             </div>
 
             <div style="text-align: center; margin-top: var(--space-lg);">
-                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Salva Maglia</button>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Salva Modifiche</button>
                 <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Annulla</a>
             </div>
         </form>
+        <?php endif; ?>
     </div>
 
     <script>
+    const kitData = <?php echo json_encode($kit); ?>;
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Carica dati lookup
         loadLookupData();
         setupAutocomplete();
         setupFileUpload();
         setupSizeSelectors();
-        setupLivePreview();
     });
+
+    function togglePhotoDelete(photoId) {
+        const photoItem = document.getElementById('photo-' + photoId);
+        const checkbox = photoItem.querySelector('.delete-photo-checkbox');
+        
+        if (checkbox.checked) {
+            photoItem.classList.add('marked-for-deletion');
+        } else {
+            photoItem.classList.remove('marked-for-deletion');
+        }
+    }
 
     function loadLookupData() {
         const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors'];
@@ -433,6 +540,13 @@ $user = getCurrentUser();
                     const option = document.createElement('option');
                     option.value = item.id;
                     option.textContent = item.name;
+                    
+                    // Pre-select current values
+                    const fieldName = selectId.replace('_id', '_id');
+                    if (kitData[fieldName] == item.id) {
+                        option.selected = true;
+                    }
+                    
                     select.appendChild(option);
                 });
             }
@@ -450,6 +564,11 @@ $user = getCurrentUser();
             btn.textContent = size.name;
             btn.dataset.value = size.id;
             
+            // Pre-select current size
+            if (kitData.size_id == size.id) {
+                btn.classList.add('active');
+            }
+            
             btn.addEventListener('click', function() {
                 container.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
@@ -466,12 +585,16 @@ $user = getCurrentUser();
             const option = document.createElement('option');
             option.value = condition.id;
             option.textContent = condition.name + ' (' + '⭐'.repeat(condition.stars) + ')';
+            
+            if (kitData.condition_id == condition.id) {
+                option.selected = true;
+            }
+            
             select.appendChild(option);
         });
     }
 
     function setupSizeSelectors() {
-        // Maniche selector
         document.querySelectorAll('.size-selector .size-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const container = this.parentElement;
@@ -484,9 +607,6 @@ $user = getCurrentUser();
                 }
             });
         });
-        
-        // Set default per maniche
-        document.querySelector('.size-btn[data-value="Short"]').classList.add('active');
     }
 
     function setupAutocomplete() {
@@ -537,7 +657,6 @@ $user = getCurrentUser();
             }, 300);
         });
         
-        // Nascondi suggerimenti quando si clicca fuori
         document.addEventListener('click', function(e) {
             if (!teamInput.contains(e.target) && !teamSuggestions.contains(e.target)) {
                 teamSuggestions.style.display = 'none';
@@ -550,10 +669,8 @@ $user = getCurrentUser();
         const fileInput = document.getElementById('photo-input');
         const uploadedPhotos = document.getElementById('uploaded-photos');
         
-        // Click to select
         uploadArea.addEventListener('click', () => fileInput.click());
         
-        // Drag & drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -619,114 +736,6 @@ $user = getCurrentUser();
         `;
         
         return fileItem;
-    }
-
-    function setupLivePreview() {
-        // Elementi form che influenzano la preview
-        const numberInput = document.getElementById('number');
-        const playerInput = document.getElementById('player_name');
-        const color1Select = document.getElementById('color1_id');
-        const color2Select = document.getElementById('color2_id');
-        const color3Select = document.getElementById('color3_id');
-        
-        // Funzione per aggiornare la preview
-        function updatePreview() {
-            const number = numberInput.value || '0';
-            const playerName = playerInput.value.toUpperCase().substring(0, 12);
-            
-            // Aggiorna numero
-            document.getElementById('shirtNumber').textContent = number;
-            
-            // Aggiorna nome giocatore
-            const playerNameElement = document.getElementById('playerName');
-            playerNameElement.textContent = playerName;
-            
-            // Ottieni colori selezionati
-            const color1 = getSelectedColor(color1Select) || '#333333';
-            const color2 = getSelectedColor(color2Select) || '#ffffff';
-            const color3 = getSelectedColor(color3Select) || color2;
-            
-            // Aggiorna colori della maglia
-            document.getElementById('gradientStart').style.stopColor = color1;
-            document.getElementById('gradientEnd').style.stopColor = color1;
-            document.getElementById('leftSleeve').setAttribute('fill', color1);
-            document.getElementById('rightSleeve').setAttribute('fill', color1);
-            document.getElementById('collar').setAttribute('fill', color3);
-            
-            // Calcola colore del numero
-            const textColor = getContrastColor(color1);
-            document.getElementById('shirtNumber').setAttribute('fill', textColor);
-            document.getElementById('playerName').setAttribute('fill', textColor);
-            
-            // Mostra/nascondi dettagli colore secondario
-            if (color2 !== color1) {
-                document.getElementById('leftStripe').style.display = 'block';
-                document.getElementById('rightStripe').style.display = 'block';
-                document.getElementById('leftSleeveDetail').style.display = 'block';
-                document.getElementById('rightSleeveDetail').style.display = 'block';
-                
-                document.getElementById('leftStripe').setAttribute('fill', color2);
-                document.getElementById('rightStripe').setAttribute('fill', color2);
-                document.getElementById('leftSleeveDetail').setAttribute('fill', color2);
-                document.getElementById('rightSleeveDetail').setAttribute('fill', color2);
-            } else {
-                document.getElementById('leftStripe').style.display = 'none';
-                document.getElementById('rightStripe').style.display = 'none';
-                document.getElementById('leftSleeveDetail').style.display = 'none';
-                document.getElementById('rightSleeveDetail').style.display = 'none';
-            }
-            
-            // Mostra dettagli colore terziario
-            if (color3 !== color1 && color3 !== color2) {
-                document.getElementById('topAccent').style.display = 'block';
-                document.getElementById('bottomAccent').style.display = 'block';
-                document.getElementById('topAccent').setAttribute('fill', color3);
-                document.getElementById('bottomAccent').setAttribute('fill', color3);
-            } else {
-                document.getElementById('topAccent').style.display = 'none';
-                document.getElementById('bottomAccent').style.display = 'none';
-            }
-        }
-        
-        function getSelectedColor(selectElement) {
-            if (!selectElement.value) return null;
-            
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const optionText = selectedOption.textContent;
-            
-            // Cerca se c'è un hex nel nome del colore (formato semplice)
-            const colorMap = {
-                'rosso': '#dc3545', 'red': '#dc3545',
-                'blu': '#0d6efd', 'blue': '#0d6efd',
-                'verde': '#198754', 'green': '#198754',
-                'giallo': '#ffc107', 'yellow': '#ffc107',
-                'nero': '#000000', 'black': '#000000',
-                'bianco': '#ffffff', 'white': '#ffffff',
-                'arancione': '#fd7e14', 'orange': '#fd7e14',
-                'viola': '#6f42c1', 'purple': '#6f42c1',
-                'grigio': '#6c757d', 'gray': '#6c757d'
-            };
-            
-            const colorName = optionText.toLowerCase();
-            return colorMap[colorName] || '#333333';
-        }
-        
-        function getContrastColor(backgroundColor) {
-            if (backgroundColor === '#ffffff' || backgroundColor === '#ffc107' || backgroundColor === '#fd7e14') {
-                return '#000000';
-            }
-            return '#ffffff';
-        }
-        
-        // Event listeners
-        numberInput.addEventListener('input', updatePreview);
-        playerInput.addEventListener('input', updatePreview);
-        color1Select.addEventListener('change', updatePreview);
-        color2Select.addEventListener('change', updatePreview);
-        color3Select.addEventListener('change', updatePreview);
-        
-        // Aggiornamento iniziale
-        updatePreview();
     }
     </script>
 </body>
