@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validazione base
         $team_id = intval($_POST['team_id'] ?? 0);
         $season = trim($_POST['season'] ?? '');
-        $number = intval($_POST['number'] ?? 0);
+        $number = !empty($_POST['number']) ? intval($_POST['number']) : null;
         $player_name = trim($_POST['player_name'] ?? '');
         $brand_id = intval($_POST['brand_id'] ?? 0) ?: null;
         $size_id = intval($_POST['size_id'] ?? 0) ?: null;
@@ -215,7 +215,7 @@ $user = getCurrentUser();
                     <div class="inline-group">
                         <div class="form-group small">
                             <label for="number">Number</label>
-                            <input type="number" id="number" name="number" min="0" max="99" placeholder="0">
+                            <input type="number" id="number" name="number" min="0" max="99" placeholder="">
                         </div>
                         <div class="form-group">
                             <label for="player_name">Player Name</label>
@@ -317,46 +317,73 @@ $user = getCurrentUser();
             <div class="svg-preview-container">
                 <h3>Jersey Preview</h3>
                 <div id="live-preview">
-                    <svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="200" height="200" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+                                <feDropShadow dx="4" dy="4" stdDeviation="6" flood-opacity="0.3"/>
                             </filter>
                         </defs>
                         
-                        <!-- Background circle -->
-                        <circle cx="100" cy="120" r="90" fill="rgba(0,0,0,0.1)" opacity="0.3"/>
+                        <!-- Jersey body (primary color - white area from new SVG) -->
+                        <path id="jerseyBody" d="
+                            M 145 372 
+                            C 209 370 274 280 278 225 
+                            C 320 170 408 120 512 120
+                            C 616 120 704 170 746 225
+                            C 750 280 815 370 879 372
+                            C 944 414 990 462 990 514
+                            L 990 736
+                            C 990 808 934 864 862 864
+                            L 162 864
+                            C 90 864 34 808 34 736
+                            L 34 514
+                            C 34 462 80 414 145 372
+                            Z
+                            
+                            M 178 564
+                            C 178 564 134 588 118 596
+                            C 106 602 98 616 98 632
+                            L 98 728
+                            C 98 770 132 804 174 804
+                            L 306 804
+                            L 306 580
+                            C 306 556 326 536 350 536
+                            L 674 536
+                            C 698 536 718 556 718 580
+                            L 718 804
+                            L 850 804
+                            C 892 804 926 770 926 728
+                            L 926 632
+                            C 926 616 918 602 906 596
+                            C 890 588 846 564 846 564
+                            C 782 596 678 620 512 620
+                            C 346 620 242 596 178 564
+                            Z
+                        " fill="#ffffff" fill-rule="evenodd" filter="url(#shadow)"/>
                         
-                        <!-- Jersey body (primary color) -->
-                        <path d="M 60 80 L 60 200 L 140 200 L 140 80 L 130 70 L 120 60 L 80 60 L 70 70 Z" 
-                              id="shirtBody" fill="#333333" stroke="rgba(0,0,0,0.2)" stroke-width="1" filter="url(#shadow)"/>
+                        <!-- V-neck cutout (transparent) -->
+                        <path d="
+                            M 378 224
+                            L 512 356
+                            L 646 224
+                            C 622 240 584 256 512 256
+                            C 440 256 402 240 378 224
+                            Z
+                        " fill="none"/>
                         
-                        <!-- Sleeves (primary color) -->
-                        <ellipse cx="50" cy="85" rx="12" ry="25" id="leftSleeve" fill="#333333" opacity="0.9"/>
-                        <ellipse cx="150" cy="85" rx="12" ry="25" id="rightSleeve" fill="#333333" opacity="0.9"/>
-                        
-                        <!-- Collar (primary color) -->
-                        <path d="M 85 60 L 85 50 C 90 45, 110 45, 115 50 L 115 60 Z" 
-                              id="collar" fill="#333333" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
-                        
-                        <!-- Number area (secondary color) -->
-                        <rect x="70" y="100" width="60" height="80" id="numberArea" 
-                              fill="#ffffff" rx="8" opacity="0.9"/>
+                        <!-- Secondary color stripes/details -->
+                        <rect x="340" y="400" width="344" height="200" id="numberArea" 
+                              fill="#000000" rx="20" opacity="0.9"/>
                         
                         <!-- Player name -->
-                        <text x="100" y="125" id="playerName" font-family="Arial, sans-serif" font-size="12" 
-                              font-weight="bold" text-anchor="middle" fill="#000000">
+                        <text x="512" y="450" id="playerName" font-family="Arial, sans-serif" font-size="36" 
+                              font-weight="bold" text-anchor="middle" fill="#ffffff">
                         </text>
                         
                         <!-- Number -->
-                        <text x="100" y="155" id="shirtNumber" font-family="Arial, sans-serif" font-size="32" 
-                              font-weight="bold" text-anchor="middle" fill="#000000">
-                            0
+                        <text x="512" y="530" id="shirtNumber" font-family="Arial, sans-serif" font-size="80" 
+                              font-weight="bold" text-anchor="middle" fill="#ffffff">
                         </text>
-                        
-                        <!-- Shine effect -->
-                        <path d="M 70 70 L 80 60 L 120 60 L 130 70 L 125 75 L 115 65 L 85 65 L 75 75 Z" 
-                              fill="rgba(255,255,255,0.2)" opacity="0.6"/>
                     </svg>
                 </div>
             </div>
@@ -443,15 +470,9 @@ $user = getCurrentUser();
     function populateJerseyTypes(data) {
         const select = document.getElementById('jersey_type_id');
         
-        // Custom order: Home, Away, Third, Other
-        const customOrder = ['Home', 'Away', 'Third', 'Other'];
-        const sortedData = data.sort((a, b) => {
-            const aIndex = customOrder.indexOf(a.name);
-            const bIndex = customOrder.indexOf(b.name);
-            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-            if (aIndex !== -1) return -1;
-            if (bIndex !== -1) return 1;
-            return a.name.localeCompare(b.name);
+        // Sort by jersey_type_id to ensure proper database order
+        const sortedData = [...data].sort((a, b) => {
+            return parseInt(a.id) - parseInt(b.id);
         });
         
         sortedData.forEach(item => {
@@ -460,6 +481,21 @@ $user = getCurrentUser();
             option.textContent = item.name;
             select.appendChild(option);
         });
+    }
+
+    function getContrastColor(backgroundColor) {
+        if (!backgroundColor) return '#000000';
+        
+        // Convert hex to RGB
+        const hex = backgroundColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        return luminance > 0.5 ? '#000000' : '#ffffff';
     }
 
     function populateColors(data) {
@@ -471,8 +507,10 @@ $user = getCurrentUser();
             data.forEach(color => {
                 const option = document.createElement('option');
                 option.value = color.id;
-                option.textContent = color.name;
+                option.textContent = `■ ${color.name}`;
                 option.dataset.hex = color.hex;
+                option.style.setProperty('--color-hex', color.hex);
+                option.style.color = color.hex;
                 select.appendChild(option);
             });
             
@@ -637,38 +675,60 @@ $user = getCurrentUser();
         });
     }
 
+    let selectedFiles = [];
+
     function handleFiles(files) {
         const uploadedPhotos = document.getElementById('uploaded-photos');
+        const fileInput = document.getElementById('photo-input');
         
-        Array.from(files).forEach((file, index) => {
+        // Add new files to our array
+        Array.from(files).forEach((file) => {
             if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fileItem = createFilePreview(file, e.target.result, index);
-                    uploadedPhotos.appendChild(fileItem);
-                };
-                reader.readAsDataURL(file);
+                selectedFiles.push(file);
             }
+        });
+        
+        // Update the file input with all selected files
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+        
+        // Update preview
+        updateFilePreview();
+    }
+    
+    function updateFilePreview() {
+        const uploadedPhotos = document.getElementById('uploaded-photos');
+        uploadedPhotos.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileItem = createFilePreview(file, e.target.result, index);
+                uploadedPhotos.appendChild(fileItem);
+            };
+            reader.readAsDataURL(file);
         });
     }
 
     function createFilePreview(file, src, index) {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-        
-        // Create hidden file input for this specific file
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'file';
-        hiddenInput.name = 'photos[]';
-        hiddenInput.style.display = 'none';
-        
-        // Transfer the file to the hidden input
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        hiddenInput.files = dataTransfer.files;
+        fileItem.dataset.filename = file.name;
+        fileItem.dataset.fileIndex = index;
         
         fileItem.innerHTML = `
-            <img src="${src}" alt="${file.name}" class="file-thumbnail">
+            <div style="position: relative;">
+                <img src="${src}" alt="${file.name}" class="file-thumbnail">
+                <button type="button" onclick="removeFileItem(this)" 
+                        style="position: absolute; top: 5px; right: 5px; background: var(--action-red); color: white; border: none; 
+                               width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold;
+                               display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    ✕
+                </button>
+            </div>
             <div class="file-info">
                 <input type="text" 
                        name="photo_titles[]" 
@@ -685,21 +745,29 @@ $user = getCurrentUser();
                     <option value="3">Store</option>
                     <option value="4">Other</option>
                 </select>
-                <button type="button" onclick="removeFileItem(this)" 
-                        style="background: var(--action-red); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">
-                    Remove
-                </button>
             </div>
         `;
-        
-        // Append the hidden input
-        fileItem.appendChild(hiddenInput);
         
         return fileItem;
     }
 
     function removeFileItem(button) {
-        button.closest('.file-item').remove();
+        const fileItem = button.closest('.file-item');
+        const fileIndex = parseInt(fileItem.dataset.fileIndex);
+        
+        // Remove the file from our array
+        selectedFiles.splice(fileIndex, 1);
+        
+        // Update the file input
+        const fileInput = document.getElementById('photo-input');
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+        
+        // Update the preview
+        updateFilePreview();
     }
 
     function setupLivePreview() {
@@ -712,7 +780,7 @@ $user = getCurrentUser();
         
         // Function to update preview
         function updatePreview() {
-            const number = numberInput.value || '0';
+            const number = numberInput.value || '';
             let playerName = playerInput.value.toUpperCase();
             
             // Truncate player name if longer than 7 characters
@@ -732,11 +800,8 @@ $user = getCurrentUser();
             const color2 = getSelectedColorHex(color2Select) || '#ffffff'; // Secondary
             const color3 = getSelectedColorHex(color3Select) || color2;    // Tertiary
             
-            // Update jersey colors (primary for body)
-            document.getElementById('shirtBody').setAttribute('fill', color1);
-            document.getElementById('leftSleeve').setAttribute('fill', color1);
-            document.getElementById('rightSleeve').setAttribute('fill', color1);
-            document.getElementById('collar').setAttribute('fill', color1);
+            // Update jersey colors (primary for body - white area)
+            document.getElementById('jerseyBody').setAttribute('fill', color1);
             
             // Update number area (secondary color)
             document.getElementById('numberArea').setAttribute('fill', color2);
@@ -754,20 +819,6 @@ $user = getCurrentUser();
             return selectedOption.dataset.hex || null;
         }
         
-        function getContrastColor(backgroundColor) {
-            if (!backgroundColor) return '#000000';
-            
-            // Convert hex to RGB
-            const hex = backgroundColor.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
-            
-            // Calculate luminance
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            
-            return luminance > 0.5 ? '#000000' : '#ffffff';
-        }
         
         // Event listeners
         numberInput.addEventListener('input', updatePreview);
