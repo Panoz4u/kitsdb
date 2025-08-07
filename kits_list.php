@@ -269,20 +269,12 @@ $user = getCurrentUser();
                                  onerror="this.style.display='none'">
                         <?php endif; ?>
                         
-                        <!-- Anteprima SVG placeholder -->
+                        <!-- Anteprima SVG dinamica -->
                         <div class="svg-preview">
-                            <svg width="80" height="100" viewBox="0 0 80 100">
-                                <rect x="10" y="20" width="60" height="60" 
-                                      fill="<?php echo $kit['color1_hex'] ?? '#333333'; ?>" 
-                                      rx="5"/>
-                                <?php if ($kit['number']): ?>
-                                    <text x="40" y="55" 
-                                          fill="<?php echo $kit['color2_hex'] ?? '#ffffff'; ?>" 
-                                          font-size="20" 
-                                          font-weight="bold" 
-                                          text-anchor="middle"><?php echo $kit['number']; ?></text>
-                                <?php endif; ?>
-                            </svg>
+                            <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
+                                 alt="Preview maglia" 
+                                 style="max-width: 80px; height: auto;"
+                                 loading="lazy">
                         </div>
                     </div>
                     
