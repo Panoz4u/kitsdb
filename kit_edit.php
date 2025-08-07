@@ -645,10 +645,11 @@ $user = getCurrentUser();
             data.forEach(color => {
                 const option = document.createElement('option');
                 option.value = color.id;
-                option.textContent = `■ ${color.name}`;
+                option.textContent = color.name;
                 option.dataset.hex = color.hex;
-                option.style.setProperty('--color-hex', color.hex);
-                option.style.color = color.hex;
+                option.style.backgroundColor = color.hex;
+                option.style.color = getContrastColor(color.hex);
+                option.style.fontWeight = 'bold';
                 
                 // Pre-select current values
                 const fieldName = selectId;

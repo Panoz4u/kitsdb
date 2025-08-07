@@ -313,78 +313,99 @@ $user = getCurrentUser();
                 </div>
             </div>
 
-            <!-- Preview SVG Live -->
+            <!-- Preview Jersey Live -->
             <div class="svg-preview-container">
                 <h3>Jersey Preview</h3>
-                <div id="live-preview">
-                    <svg width="200" height="200" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feDropShadow dx="4" dy="4" stdDeviation="6" flood-opacity="0.3"/>
-                            </filter>
-                        </defs>
-                        
-                        <!-- Jersey body (primary color - white area from new SVG) -->
-                        <path id="jerseyBody" d="
-                            M 145 372 
-                            C 209 370 274 280 278 225 
-                            C 320 170 408 120 512 120
-                            C 616 120 704 170 746 225
-                            C 750 280 815 370 879 372
-                            C 944 414 990 462 990 514
-                            L 990 736
-                            C 990 808 934 864 862 864
-                            L 162 864
-                            C 90 864 34 808 34 736
-                            L 34 514
-                            C 34 462 80 414 145 372
-                            Z
+                <div id="live-preview" style="display: flex; justify-content: center;">
+                    <div style="position: relative;">
+                        <svg width="200" height="200" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 200px; max-height: 200px;">
+                            <!-- Jersey borders/outline (secondary color - originally gray #4B5563) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyBorder">
+                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#4B5563"/>
+                            </g>
                             
-                            M 178 564
-                            C 178 564 134 588 118 596
-                            C 106 602 98 616 98 632
-                            L 98 728
-                            C 98 770 132 804 174 804
-                            L 306 804
-                            L 306 580
-                            C 306 556 326 536 350 536
-                            L 674 536
-                            C 698 536 718 556 718 580
-                            L 718 804
-                            L 850 804
-                            C 892 804 926 770 926 728
-                            L 926 632
-                            C 926 616 918 602 906 596
-                            C 890 588 846 564 846 564
-                            C 782 596 678 620 512 620
-                            C 346 620 242 596 178 564
-                            Z
-                        " fill="#ffffff" fill-rule="evenodd" filter="url(#shadow)"/>
+                            <!-- Jersey inner area (primary color - originally transparent) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyInner">
+                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#ffffff" fill-opacity="0.9"/>
+                            </g>
+                            
+                            <!-- V-neck cutout (transparent) -->
+                            <path d="M 2000 800 L 2133 1200 L 2267 800 C 2240 850 2180 900 2133 900 C 2086 900 2026 850 2000 800 Z" 
+                                  fill="none" stroke="none"/>
+                        </svg>
                         
-                        <!-- V-neck cutout (transparent) -->
-                        <path d="
-                            M 378 224
-                            L 512 356
-                            L 646 224
-                            C 622 240 584 256 512 256
-                            C 440 256 402 240 378 224
-                            Z
-                        " fill="none"/>
-                        
-                        <!-- Secondary color stripes/details -->
-                        <rect x="340" y="400" width="344" height="200" id="numberArea" 
-                              fill="#000000" rx="20" opacity="0.9"/>
-                        
-                        <!-- Player name -->
-                        <text x="512" y="450" id="playerName" font-family="Arial, sans-serif" font-size="36" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff">
-                        </text>
-                        
-                        <!-- Number -->
-                        <text x="512" y="530" id="shirtNumber" font-family="Arial, sans-serif" font-size="80" 
-                              font-weight="bold" text-anchor="middle" fill="#ffffff">
-                        </text>
-                    </svg>
+                        <!-- Number area overlay (secondary color) -->
+                        <div id="numberArea" style="
+                            position: absolute;
+                            width: 80px;
+                            height: 50px;
+                            background: #4B5563;
+                            border-radius: 8px;
+                            left: 60px;
+                            top: 90px;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            opacity: 0.9;
+                        ">
+                            <!-- Player name -->
+                            <div id="playerName" style="
+                                font-family: Arial, sans-serif;
+                                font-size: 8px;
+                                font-weight: bold;
+                                color: #ffffff;
+                                margin-bottom: 2px;
+                            "></div>
+                            
+                            <!-- Number -->
+                            <div id="shirtNumber" style="
+                                font-family: Arial, sans-serif;
+                                font-size: 20px;
+                                font-weight: bold;
+                                color: #ffffff;
+                            "></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -507,10 +528,11 @@ $user = getCurrentUser();
             data.forEach(color => {
                 const option = document.createElement('option');
                 option.value = color.id;
-                option.textContent = `■ ${color.name}`;
+                option.textContent = color.name;
                 option.dataset.hex = color.hex;
-                option.style.setProperty('--color-hex', color.hex);
-                option.style.color = color.hex;
+                option.style.backgroundColor = color.hex;
+                option.style.color = getContrastColor(color.hex);
+                option.style.fontWeight = 'bold';
                 select.appendChild(option);
             });
             
@@ -788,28 +810,32 @@ $user = getCurrentUser();
                 playerName = playerName.substring(0, 7) + '.';
             }
             
-            // Update number
+            // Update number and player name
             document.getElementById('shirtNumber').textContent = number;
-            
-            // Update player name (above number)
-            const playerNameElement = document.getElementById('playerName');
-            playerNameElement.textContent = playerName;
+            document.getElementById('playerName').textContent = playerName;
             
             // Get selected colors using hex from database
-            const color1 = getSelectedColorHex(color1Select) || '#333333'; // Primary
-            const color2 = getSelectedColorHex(color2Select) || '#ffffff'; // Secondary
-            const color3 = getSelectedColorHex(color3Select) || color2;    // Tertiary
+            const color1 = getSelectedColorHex(color1Select) || '#ffffff'; // Primary (inner jersey)
+            const color2 = getSelectedColorHex(color2Select) || '#4B5563'; // Secondary (borders)
             
-            // Update jersey colors (primary for body - white area)
-            document.getElementById('jerseyBody').setAttribute('fill', color1);
+            // Update jersey colors in SVG
+            const jerseyInner = document.getElementById('jerseyInner');
+            const jerseyBorder = document.getElementById('jerseyBorder');
             
-            // Update number area (secondary color)
-            document.getElementById('numberArea').setAttribute('fill', color2);
+            if (jerseyInner) {
+                jerseyInner.querySelector('path').setAttribute('fill', color1);
+            }
+            if (jerseyBorder) {
+                jerseyBorder.querySelector('path').setAttribute('fill', color2);
+            }
+            
+            // Update number area
+            document.getElementById('numberArea').style.background = color2;
             
             // Calculate text color for number and name
             const textColor = getContrastColor(color2);
-            document.getElementById('shirtNumber').setAttribute('fill', textColor);
-            document.getElementById('playerName').setAttribute('fill', textColor);
+            document.getElementById('shirtNumber').style.color = textColor;
+            document.getElementById('playerName').style.color = textColor;
         }
         
         function getSelectedColorHex(selectElement) {
