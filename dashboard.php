@@ -99,26 +99,89 @@ $user = getCurrentUser();
             margin-bottom: 1rem;
         }
         
-        .welcome-section {
-            background: linear-gradient(135deg, var(--action-red), #c13349);
+        .nav-user {
             color: var(--primary-text);
-            padding: 2rem;
-            border-radius: 0.75rem;
-            margin-bottom: var(--space-lg);
-            text-align: center;
+            font-weight: 600;
+            margin-right: var(--space-sm);
         }
         
-        .welcome-title {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-text);
+            margin: 2px 0;
+            transition: 0.3s;
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--surface);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding: 1rem;
+            min-width: 200px;
+            z-index: 1001;
+        }
+        
+        .mobile-menu.active {
+            display: block;
+        }
+        
+        .mobile-nav-link {
+            display: block;
+            color: var(--primary-text);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
             margin-bottom: 0.5rem;
-            color: var(--primary-text);
+            transition: background 0.2s ease;
         }
         
-        .welcome-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .mobile-nav-link:hover {
+            background: var(--action-red);
         }
+        
+        .mobile-logout-btn {
+            width: 100%;
+            background: var(--action-red);
+            color: var(--primary-text);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 0 !important;
+                padding: 0 var(--space-sm) !important;
+            }
+            
+            .nav-menu {
+                display: none !important;
+            }
+            
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -129,21 +192,56 @@ $user = getCurrentUser();
             <nav class="nav-menu">
                 <a href="kits_list.php" class="nav-link">Lista Maglie</a>
                 <a href="kit_add.php" class="nav-link">Aggiungi Maglia</a>
+                <span class="nav-user"><?php echo htmlspecialchars($user['username']); ?></span>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
             </nav>
+            
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="kits_list.php" class="mobile-nav-link">Lista Maglie</a>
+                <a href="kit_add.php" class="mobile-nav-link">Aggiungi Maglia</a>
+                <form method="POST" action="logout.php">
+                    <button type="submit" class="mobile-logout-btn">Logout</button>
+                </form>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1 class="welcome-title">Benvenuto, <?php echo htmlspecialchars($user['username']); ?>!</h1>
-            <p class="welcome-subtitle">Gestisci la tua collezione di maglie da calcio</p>
+        <!-- Quick Actions -->
+        <div class="quick-actions" style="margin-top: var(--space-lg);">
+            <a href="kit_add.php" class="action-card">
+                <div class="action-icon">➕</div>
+                <h3>Aggiungi Nuova Maglia</h3>
+                <p>Inserisci una nuova maglia nella collezione</p>
+            </a>
+            
+            <a href="kits_list.php" class="action-card">
+                <div class="action-icon">📋</div>
+                <h3>Visualizza Lista</h3>
+                <p>Sfoglia tutte le maglie con filtri avanzati</p>
+            </a>
+            
+            <a href="nations.php" class="action-card">
+                <div class="action-icon">🌍</div>
+                <h3>Gestisci Nazioni</h3>
+                <p>Visualizza e gestisci le nazioni</p>
+            </a>
         </div>
 
+        <!-- Overview Section -->
+        <h2 style="color: var(--highlight-yellow); margin: var(--space-lg) 0;">Overview</h2>
+        
         <!-- Statistics -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -166,28 +264,23 @@ $user = getCurrentUser();
                 <div class="stat-label">Squadre nel Database</div>
             </div>
         </div>
-
-        <!-- Quick Actions -->
-        <h2>Azioni Rapide</h2>
-        <div class="quick-actions">
-            <a href="kit_add.php" class="action-card">
-                <div class="action-icon">➕</div>
-                <h3>Aggiungi Nuova Maglia</h3>
-                <p>Inserisci una nuova maglia nella collezione</p>
-            </a>
-            
-            <a href="kits_list.php" class="action-card">
-                <div class="action-icon">📋</div>
-                <h3>Visualizza Lista</h3>
-                <p>Sfoglia tutte le maglie con filtri avanzati</p>
-            </a>
-            
-            <a href="nations.php" class="action-card">
-                <div class="action-icon">🌍</div>
-                <h3>Gestisci Nazioni</h3>
-                <p>Visualizza e gestisci le nazioni</p>
-            </a>
-        </div>
     </div>
+
+    <script>
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenu.classList.toggle('active');
+    }
+    
+    // Chiudi menu quando si clicca fuori
+    document.addEventListener('click', function(event) {
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        
+        if (!mobileMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+            mobileMenu.classList.remove('active');
+        }
+    });
+    </script>
 </body>
 </html>
