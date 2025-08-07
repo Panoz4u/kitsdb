@@ -1,0 +1,110 @@
+📘 Specifiche Tecniche per Claude Code – Progetto KitsDB (VERSIONE ESTESA)
+
+1. Descrizione generale
+KitsDB è una web app per la catalogazione, gestione e visualizzazione di una collezione di maglie da calcio.
+Lo scopo è fornire un'interfaccia user-friendly, coerente con un design moderno e accessibile, per registrare, filtrare e consultare ogni maglia della collezione. 
+L'app si rivolge esclusivamente a utenti ADMIN, con login sicuro, che gestiscono l'inserimento, modifica e visualizzazione delle maglie.
+
+Problema risolto: gestione caotica e non standardizzata di collezioni fisiche. L’app permette di creare un archivio strutturato, arricchito con immagini, QR code, metadati e anteprime visive personalizzate.
+
+2. Funzionalità specifiche
+• Login/logout con sessione protetta
+• Lista maglie con ricerca testuale live e filtri su lookup table (brand, tipo, categoria, condizione)
+• Inserimento nuova maglia tramite form dinamico
+• Modifica maglia con precompilazione dei campi
+• Eliminazione maglia con conferma
+• Caricamento immagini con drag & drop o selezione file
+• Generazione anteprima SVG personalizzata: maglia + colori + numero
+• Autocomplete per squadra (campo libero ma suggerito live)
+• Gestione immagini con nome e tipo selezionabile
+• Visualizzazione logo squadra nella lista
+• Login protetto, controllo sessione e redirect se non autenticati
+
+Flussi utente principali:
+1. L’admin effettua login tramite email e password.
+2. Accede alla lista maglie, può filtrare, cercare o aggiungere/modificare.
+3. Nella pagina di inserimento/modifica può compilare il form, caricare immagini, vedere la preview SVG live.
+4. Salva o modifica la maglia → torna alla lista.
+5. Può eliminare una maglia con conferma.
+6. Può effettuare logout.
+
+3. Pagine e routing
+• /login.php → login admin
+• /logout.php → distrugge sessione
+• /kits_list.php → elenco maglie con ricerca, filtri e preview
+• /kit_add.php → inserimento maglia
+• /kit_edit.php?id=X → modifica maglia esistente
+• /kit_delete.php?id=X → eliminazione maglia
+• /preview/maglia.php?id=X → SVG generato con colori e numero
+• /api/autocomplete.php → restituisce squadre e giocatori suggeriti
+• /api/lookup.php → restituisce brand, tipo, condizione, taglie, ecc.
+
+4. Requisiti tecnici
+• Stack: PHP + MySQL
+• Hosting: Netsons
+• Autenticazione: gestita via sessione PHP, password criptata (password_hash)
+• DB già esistente, tabella principale `kit`, tabelle di lookup per tutte le opzioni
+• QR code e immagini gestiti da filesystem
+• Anteprime SVG generate dinamicamente da PHP
+• Nessuna API esterna necessaria al momento
+
+5. Design System e UX
+
+Palette colori (CSS Custom Properties):
+--main-purple: #210B2C (sfondo e header)
+--action-red: #DE3C4B (bottoni e link principali)
+--highlight-yellow: #DCF763 (focus, validazione, box-shadow)
+--gray-100: #F5F5F5 (background secondari)
+--gray-600: #4A4A4A (testi secondari)
+--white: #FFFFFF
+--black: #000000
+
+Tipografia:
+• Titoli: "Playfair Display", serif
+• Contenuti e form: "Inter", sans-serif
+
+Spaziatura:
+--space-xs: 0.5rem; --space-sm: 1rem; --space-md: 1.5rem; --space-lg: 2.5rem;
+Layout a 12 colonne, responsive. Header fisso con titolo “KITSDB” a sinistra e logout a destra (solo se loggato).
+
+Componenti UI:
+• Bottoni: rosso, testo bianco, border-radius .375rem
+• Input: bordo grigio, focus giallo (box-shadow)
+• Dropdown: per brand, tipo, categoria, condizione, colore
+• Taglie: rappresentate da bottoni cliccabili (es. [S] [M] [L] [XL])
+• Campo squadra: input testuale con suggerimenti live (autocomplete)
+• Caricamento immagini: drag&drop + click, preview, campo nome + tipo
+• Anteprima SVG generata in tempo reale accanto o sopra al form
+
+6. Dettaglio gestione immagini
+• img_front, img_back, img_extra (nessuna obbligatoria)
+• Upload temporaneo in /upload_tmp/
+• Al salvataggio vengono spostate in /uploads/front|back|extra/
+• Nome file finale es: front_123.jpg
+• Ogni immagine può avere un nome personalizzato e tipo associato (dropdown: match/web/store/altro)
+
+7. Preview SVG dinamica
+• File PHP /preview/maglia.php?id=XYZ genera un SVG con:
+    - Sagoma standard della maglietta
+    - Colori primario, secondario e terziario (riempimento o pattern)
+    - Numero (se presente), centrato, colore calcolato in automatico
+• Colore numero:
+    - Se color1 è scuro → numero bianco
+    - Se color1 è chiaro → numero nero
+    - Altrimenti → numero grigio (#888)
+• Anteprima visibile direttamente nella lista e nel form di editing
+
+8. Login e sicurezza
+• login.php → verifica credenziali con password_verify()
+• Sessione utente in $_SESSION['user_id']
+• Include auth.php su ogni pagina protetta
+• logout.php → distruzione sessione + redirect
+• Tutti gli endpoint sono protetti
+
+9. User stories sintetiche
+• Come admin, voglio filtrare per brand, categoria e tipo per trovare subito le maglie desiderate
+• Come admin, voglio vedere una preview dinamica della maglia anche senza immagini caricate
+• Come admin, voglio inserire maglie con colori personalizzati e numero visibile
+• Come admin, voglio caricare immagini facilmente e specificare il tipo
+• Come admin, voglio modificare rapidamente una maglia con i campi già compilati
+• Come admin, voglio vedere una lista compatta con logo squadra, nome e preview visiva
