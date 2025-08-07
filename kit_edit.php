@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
         // Validazione base
         $team_id = intval($_POST['team_id'] ?? 0);
         $season = trim($_POST['season'] ?? '');
-        $number = intval($_POST['number'] ?? 0);
+        $number = !empty($_POST['number']) ? intval($_POST['number']) : null;
         $player_name = trim($_POST['player_name'] ?? '');
         $brand_id = intval($_POST['brand_id'] ?? 0) ?: null;
         $size_id = intval($_POST['size_id'] ?? 0) ?: null;
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
         $color3_id = intval($_POST['color3_id'] ?? 0) ?: null;
         $notes = trim($_POST['notes'] ?? '');
         
-        if ($team_id <= 0 || empty($season) || $number < 0) {
+        if ($team_id <= 0) {
             throw new Exception('Campi obbligatori mancanti o non validi.');
         }
         
@@ -311,20 +311,21 @@ $user = getCurrentUser();
                     <input type="hidden" name="team_id" id="team_id" value="<?php echo $kit['team_id']; ?>" required>
                 </div>
 
-                <!-- Stagione -->
+                <!-- Season -->
                 <div class="form-group">
-                    <label for="season">Stagione *</label>
-                    <input type="text" id="season" name="season" placeholder="es. 2023-24" required
-                           value="<?php echo htmlspecialchars($kit['season']); ?>">
+                    <label for="season">Season</label>
+                    <select name="season" id="season">
+                        <option value="" style="opacity: 0.6;">Select season...</option>
+                    </select>
                 </div>
 
                 <!-- Numero e Giocatore -->
                 <div class="form-group">
                     <div class="inline-group">
                         <div class="form-group small">
-                            <label for="number">Numero *</label>
-                            <input type="number" id="number" name="number" min="0" max="99" required
-                                   value="<?php echo $kit['number']; ?>">
+                            <label for="number">Numero</label>
+                            <input type="number" id="number" name="number" min="0" max="99"
+                                   value="<?php echo $kit['number'] ?? ''; ?>">
                         </div>
                         <div class="form-group">
                             <label for="player_name">Nome Giocatore</label>
@@ -505,7 +506,7 @@ $user = getCurrentUser();
     }
 
     function loadLookupData() {
-        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors'];
+        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons'];
         
         lookupTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
@@ -515,6 +516,10 @@ $user = getCurrentUser();
                         populateSizes(data);
                     } else if (type === 'conditions') {
                         populateConditions(data);
+                    } else if (type === 'jersey_types') {
+                        populateJerseyTypes(data);
+                    } else if (type === 'colors') {
+                        populateColors(data);
                     } else {
                         populateSelect(type, data);
                     }
@@ -528,7 +533,7 @@ $user = getCurrentUser();
             'brands': 'brand_id',
             'categories': 'category_id', 
             'jersey_types': 'jersey_type_id',
-            'colors': 'color1_id,color2_id,color3_id'
+            'seasons': 'season'
         };
         
         const selectIds = selectMap[type].split(',');
@@ -538,12 +543,13 @@ $user = getCurrentUser();
             if (select && Array.isArray(data)) {
                 data.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item.id;
+                    option.value = type === 'seasons' ? item.name : item.id;
                     option.textContent = item.name;
                     
                     // Pre-select current values
-                    const fieldName = selectId.replace('_id', '_id');
-                    if (kitData[fieldName] == item.id) {
+                    const fieldName = type === 'seasons' ? 'season' : selectId.replace('_id', '_id');
+                    const currentValue = type === 'seasons' ? item.name : item.id;
+                    if (kitData[fieldName] == currentValue) {
                         option.selected = true;
                     }
                     
@@ -591,6 +597,67 @@ $user = getCurrentUser();
             }
             
             select.appendChild(option);
+        });
+    }
+
+    function populateJerseyTypes(data) {
+        const select = document.getElementById('jersey_type_id');
+        
+        // Sort by jersey_type_id to ensure proper database order
+        const sortedData = [...data].sort((a, b) => {
+            return parseInt(a.id) - parseInt(b.id);
+        });
+        
+        sortedData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            
+            if (kitData.jersey_type_id == item.id) {
+                option.selected = true;
+            }
+            
+            select.appendChild(option);
+        });
+    }
+
+    function getContrastColor(backgroundColor) {
+        if (!backgroundColor) return '#000000';
+        
+        // Convert hex to RGB
+        const hex = backgroundColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        return luminance > 0.5 ? '#000000' : '#ffffff';
+    }
+
+    function populateColors(data) {
+        const colorSelects = ['color1_id', 'color2_id', 'color3_id'];
+        
+        colorSelects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            
+            data.forEach(color => {
+                const option = document.createElement('option');
+                option.value = color.id;
+                option.textContent = `■ ${color.name}`;
+                option.dataset.hex = color.hex;
+                option.style.setProperty('--color-hex', color.hex);
+                option.style.color = color.hex;
+                
+                // Pre-select current values
+                const fieldName = selectId;
+                if (kitData[fieldName] == color.id) {
+                    option.selected = true;
+                }
+                
+                select.appendChild(option);
+            });
         });
     }
 
@@ -691,27 +758,60 @@ $user = getCurrentUser();
         });
     }
 
+    let selectedFiles = [];
+
     function handleFiles(files) {
         const uploadedPhotos = document.getElementById('uploaded-photos');
+        const fileInput = document.getElementById('photo-input');
         
-        Array.from(files).forEach((file, index) => {
+        // Add new files to our array
+        Array.from(files).forEach((file) => {
             if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fileItem = createFilePreview(file, e.target.result, index);
-                    uploadedPhotos.appendChild(fileItem);
-                };
-                reader.readAsDataURL(file);
+                selectedFiles.push(file);
             }
+        });
+        
+        // Update the file input with all selected files
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+        
+        // Update preview
+        updateFilePreview();
+    }
+    
+    function updateFilePreview() {
+        const uploadedPhotos = document.getElementById('uploaded-photos');
+        uploadedPhotos.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileItem = createFilePreview(file, e.target.result, index);
+                uploadedPhotos.appendChild(fileItem);
+            };
+            reader.readAsDataURL(file);
         });
     }
 
     function createFilePreview(file, src, index) {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
+        fileItem.dataset.filename = file.name;
+        fileItem.dataset.fileIndex = index;
         
         fileItem.innerHTML = `
-            <img src="${src}" alt="${file.name}" class="file-thumbnail">
+            <div style="position: relative;">
+                <img src="${src}" alt="${file.name}" class="file-thumbnail">
+                <button type="button" onclick="removeFileItem(this)" 
+                        style="position: absolute; top: 5px; right: 5px; background: var(--action-red); color: white; border: none; 
+                               width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold;
+                               display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    ✕
+                </button>
+            </div>
             <div class="file-info">
                 <input type="text" 
                        name="photo_titles[]" 
@@ -728,14 +828,29 @@ $user = getCurrentUser();
                     <option value="3">Store</option>
                     <option value="4">Altro</option>
                 </select>
-                <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                        style="background: var(--action-red); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">
-                    Rimuovi
-                </button>
             </div>
         `;
         
         return fileItem;
+    }
+
+    function removeFileItem(button) {
+        const fileItem = button.closest('.file-item');
+        const fileIndex = parseInt(fileItem.dataset.fileIndex);
+        
+        // Remove the file from our array
+        selectedFiles.splice(fileIndex, 1);
+        
+        // Update the file input
+        const fileInput = document.getElementById('photo-input');
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+        
+        // Update the preview
+        updateFilePreview();
     }
     </script>
 </body>
