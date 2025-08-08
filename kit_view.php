@@ -64,6 +64,28 @@ try {
 }
 
 $user = getCurrentUser();
+
+// Function to determine if text should be white or black based on background color
+function getContrastColor($hexColor) {
+    if (!$hexColor) return '#ffffff';
+    
+    // Remove # if present
+    $hexColor = ltrim($hexColor, '#');
+    
+    // Convert hex to RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+    
+    // Calculate relative luminance
+    $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+    
+    // Return white text for dark backgrounds, black for light backgrounds
+    return $luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
+$nameTextColor = getContrastColor($kit['color1_hex']); // Name contrasts with primary color
+$numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts with secondary color
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -103,8 +125,9 @@ $user = getCurrentUser();
         .kit-header {
             background: linear-gradient(135deg, var(--surface) 0%, var(--background) 100%);
             border-radius: 1rem;
-            padding: 3rem 2rem 2rem 2rem;
-            margin-bottom: calc(var(--space-xl) + 1rem);
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
             border: 1px solid var(--border-color);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -155,8 +178,8 @@ $user = getCurrentUser();
         .kit-details-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: calc(var(--space-xl) + 0.5rem);
-            margin-bottom: calc(var(--space-xl) + 0.5rem);
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
         }
         
         .details-card {
@@ -186,6 +209,13 @@ $user = getCurrentUser();
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        .detail-row.color-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
         .detail-row:last-child {
             border-bottom: none;
         }
@@ -201,10 +231,15 @@ $user = getCurrentUser();
             text-align: right;
         }
         
+        .detail-row .color-display {
+            justify-self: flex-end;
+        }
+        
         .color-display {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            width: 100%;
         }
         
         .color-swatch {
@@ -231,8 +266,8 @@ $user = getCurrentUser();
             border-radius: 0.75rem;
             padding: 1.5rem;
             border: 1px solid var(--border-color);
-            margin-bottom: calc(var(--space-xl) + 0.5rem);
-            margin-top: calc(var(--space-lg) + 0.5rem);
+            margin-bottom: 1.25rem;
+            margin-top: 1.25rem;
         }
         
         .notes-text {
@@ -243,7 +278,7 @@ $user = getCurrentUser();
         
         .photo-gallery {
             margin-bottom: var(--space-xl);
-            margin-top: calc(var(--space-lg) + 0.5rem);
+            margin-top: 1.25rem;
         }
         
         .gallery-title {
@@ -587,14 +622,14 @@ $user = getCurrentUser();
                             <!-- Player name text -->
                             <text x="2133" y="1900" text-anchor="middle" 
                                   font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
-                                  font-size="600" fill="<?php echo $kit['color3_hex'] ?: '#000000'; ?>">
-                                <?php echo htmlspecialchars($kit['player_name'] ?: ''); ?>
+                                  font-size="600" fill="<?php echo $nameTextColor; ?>">
+                                <?php echo strtoupper(htmlspecialchars($kit['player_name'] ?: '')); ?>
                             </text>
                             
                             <!-- Number text -->
                             <text x="2133" y="3100" text-anchor="middle" 
                                   font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
-                                  font-size="1000" fill="<?php echo $kit['color3_hex'] ?: '#000000'; ?>">
+                                  font-size="1000" fill="<?php echo $numberTextColor; ?>">
                                 <?php echo $kit['number'] ?: ''; ?>
                             </text>
                         </svg>
@@ -655,32 +690,26 @@ $user = getCurrentUser();
                 <h3 class="card-title">🎨 Colors & Condition</h3>
                 
                 <?php if ($kit['color1_name']): ?>
-                <div class="detail-row">
+                <div class="detail-row color-row">
                     <span class="detail-label">Primary Color</span>
-                    <div class="color-display">
-                        <span class="color-swatch" style="background-color: <?php echo $kit['color1_hex']; ?>"></span>
-                        <span class="detail-value"><?php echo htmlspecialchars($kit['color1_name']); ?></span>
-                    </div>
+                    <span class="detail-value"><?php echo htmlspecialchars($kit['color1_name']); ?></span>
+                    <span class="color-swatch" style="background-color: <?php echo $kit['color1_hex']; ?>"></span>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($kit['color2_name']): ?>
-                <div class="detail-row">
+                <div class="detail-row color-row">
                     <span class="detail-label">Secondary Color</span>
-                    <div class="color-display">
-                        <span class="color-swatch" style="background-color: <?php echo $kit['color2_hex']; ?>"></span>
-                        <span class="detail-value"><?php echo htmlspecialchars($kit['color2_name']); ?></span>
-                    </div>
+                    <span class="detail-value"><?php echo htmlspecialchars($kit['color2_name']); ?></span>
+                    <span class="color-swatch" style="background-color: <?php echo $kit['color2_hex']; ?>"></span>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($kit['color3_name']): ?>
-                <div class="detail-row">
+                <div class="detail-row color-row">
                     <span class="detail-label">Tertiary Color</span>
-                    <div class="color-display">
-                        <span class="color-swatch" style="background-color: <?php echo $kit['color3_hex']; ?>"></span>
-                        <span class="detail-value"><?php echo htmlspecialchars($kit['color3_name']); ?></span>
-                    </div>
+                    <span class="detail-value"><?php echo htmlspecialchars($kit['color3_name']); ?></span>
+                    <span class="color-swatch" style="background-color: <?php echo $kit['color3_hex']; ?>"></span>
                 </div>
                 <?php endif; ?>
                 
