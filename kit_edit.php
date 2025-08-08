@@ -348,9 +348,9 @@ $user = getCurrentUser();
         <?php if ($kit): ?>
         <form method="POST" enctype="multipart/form-data" id="kitForm">
             <div class="form-grid">
-                <!-- Squadra con autocomplete -->
+                <!-- Team with autocomplete -->
                 <div class="form-group">
-                    <label for="team_search">Squadra *</label>
+                    <label for="team_search">Team *</label>
                     <div class="autocomplete-container">
                         <input type="text" id="team_search" placeholder="Search team..." required 
                                value="<?php echo htmlspecialchars($kit['team_name']); ?>">
@@ -367,28 +367,28 @@ $user = getCurrentUser();
                     </select>
                 </div>
 
-                <!-- Numero e Giocatore -->
+                <!-- Number and Player -->
                 <div class="form-group">
                     <div class="inline-group">
                         <div class="form-group small">
-                            <label for="number">Numero</label>
+                            <label for="number">Number</label>
                             <input type="number" id="number" name="number" min="0" max="99"
                                    value="<?php echo $kit['number'] ?? ''; ?>">
                         </div>
                         <div class="form-group">
-                            <label for="player_name">Nome Giocatore</label>
-                            <input type="text" id="player_name" name="player_name" placeholder="Nome del giocatore"
+                            <label for="player_name">Player Name</label>
+                            <input type="text" id="player_name" name="player_name" placeholder="Player name"
                                    value="<?php echo htmlspecialchars($kit['player_name'] ?? ''); ?>">
                         </div>
                     </div>
                 </div>
 
-                <!-- Maniche -->
+                <!-- Sleeves -->
                 <div class="form-group">
-                    <label>Maniche</label>
+                    <label>Sleeves</label>
                     <div class="size-selector">
-                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Short' ? 'active' : ''; ?>" data-value="Short">Corte</button>
-                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Long' ? 'active' : ''; ?>" data-value="Long">Lunghe</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Short' ? 'active' : ''; ?>" data-value="Short">Short</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Long' ? 'active' : ''; ?>" data-value="Long">Long</button>
                     </div>
                     <input type="hidden" name="sleeves" id="sleeves" value="<?php echo $kit['sleeves']; ?>">
                 </div>
@@ -397,15 +397,15 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="brand_id">Brand</label>
                     <select name="brand_id" id="brand_id">
-                        <option value="">Seleziona brand...</option>
+                        <option value="">Select brand...</option>
                     </select>
                 </div>
 
-                <!-- Categoria -->
+                <!-- Category -->
                 <div class="form-group">
-                    <label for="category_id">Categoria</label>
+                    <label for="category_id">Category</label>
                     <select name="category_id" id="category_id">
-                        <option value="">Seleziona categoria...</option>
+                        <option value="">Select category...</option>
                     </select>
                 </div>
 
@@ -413,7 +413,7 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="jersey_type_id">Jersey Type</label>
                     <select name="jersey_type_id" id="jersey_type_id">
-                        <option value="">Seleziona tipo...</option>
+                        <option value="">Select type...</option>
                     </select>
                 </div>
 
@@ -421,15 +421,15 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="condition_id">Condition</label>
                     <select name="condition_id" id="condition_id">
-                        <option value="">Seleziona condizione...</option>
+                        <option value="">Select condition...</option>
                     </select>
                 </div>
 
-                <!-- Taglie -->
+                <!-- Sizes -->
                 <div class="form-group full-width">
                     <label>Size</label>
                     <div class="size-selector" id="size-selector">
-                        <!-- Caricate via JS -->
+                        <!-- Loaded via JS -->
                     </div>
                     <input type="hidden" name="size_id" id="size_id" value="<?php echo $kit['size_id']; ?>">
                 </div>
@@ -465,10 +465,10 @@ $user = getCurrentUser();
                     </div>
                 </div>
 
-                <!-- Note -->
+                <!-- Notes -->
                 <div class="form-group full-width">
-                    <label for="notes">Note</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Additional notes..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
                 </div>
             </div>
 
@@ -599,14 +599,14 @@ $user = getCurrentUser();
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">
-                        Trascina le foto qui o clicca per selezionare<br>
-                        <small>Formati supportati: JPG, PNG, GIF (max 5MB)</small>
+                        Drag photos here or click to select<br>
+                        <small>Supported formats: JPG, PNG, GIF (max 5MB)</small>
                     </div>
                     <input type="file" id="photo-input" name="photos[]" multiple accept="image/*" style="display: none;">
                 </div>
                 
                 <div class="uploaded-photos" id="uploaded-photos">
-                    <!-- Nuovi file caricati mostrati qui -->
+                    <!-- New uploaded files shown here -->
                 </div>
             </div>
 
@@ -1094,11 +1094,11 @@ $user = getCurrentUser();
             <div class="file-info">
                 <input type="text" 
                        name="photo_titles[]" 
-                       placeholder="Nome foto..." 
+                       placeholder="Photo name..." 
                        class="file-name-input">
                 <select name="photo_types[]" class="file-name-input">
-                    <option value="front">Fronte</option>
-                    <option value="back">Retro</option>
+                    <option value="front">Front</option>
+                    <option value="back">Back</option>
                     <option value="extra">Extra</option>
                 </select>
                 <select name="photo_classifications[]" class="file-name-input">
