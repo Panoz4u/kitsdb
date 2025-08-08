@@ -4,7 +4,7 @@ require dirname(__FILE__) . '/config.php';
 
 $error = '';
 
-// Se già loggato, redirect al dashboard
+// If already logged in, redirect to dashboard
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit();
@@ -26,12 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: dashboard.php');
         exit;
     } else {
-        $error = 'Username o password non validi.';
+        $error = 'Invalid username or password.';
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -111,16 +111,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label for="username" class="form-label">Username</label>
                     <input type="text" id="username" name="username" required autofocus
-                           placeholder="Inserisci il tuo username">
+                           placeholder="Enter your username">
                 </div>
                 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" id="password" name="password" required 
-                           placeholder="Inserisci la tua password">
+                           placeholder="Enter your password">
                 </div>
                 
-                <button type="submit" class="login-btn">Accedi</button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
     </div>

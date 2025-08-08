@@ -4,7 +4,7 @@ require_once 'config.php';
 
 requireAdmin();
 
-// Gestione filtri e ricerca
+// Handle filters and search
 $search = $_GET['search'] ?? '';
 $brand_filter = $_GET['brand'] ?? '';
 $category_filter = $_GET['category'] ?? '';
@@ -17,18 +17,18 @@ $offset = ($page - 1) * $per_page;
 try {
     $db = getDb();
     
-    // Query base per i kits
+    // Base query for kits
     $where_conditions = ['1=1'];
     $params = [];
     
-    // Filtro ricerca testuale
+    // Text search filter
     if (!empty($search)) {
         $where_conditions[] = "(t.name LIKE ? OR k.player_name LIKE ? OR k.season LIKE ? OR k.number LIKE ?)";
         $searchTerm = '%' . $search . '%';
         $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
     }
     
-    // Filtri dropdown
+    // Dropdown filters
     if (!empty($brand_filter)) {
         $where_conditions[] = "k.brand_id = ?";
         $params[] = $brand_filter;
@@ -51,7 +51,7 @@ try {
     
     $where_clause = implode(' AND ', $where_conditions);
     
-    // Query per contare il totale
+    // Query to count total
     $count_sql = "
         SELECT COUNT(*) 
         FROM kits k
@@ -63,7 +63,7 @@ try {
     $total_kits = $count_stmt->fetchColumn();
     $total_pages = ceil($total_kits / $per_page);
     
-    // Query principale per i dati
+    // Main query for data
     $sql = "
         SELECT 
             k.*,
@@ -110,11 +110,11 @@ try {
 $user = getCurrentUser();
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista Maglie - KITSDB</title>
+    <title>Jersey List - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .pagination {
@@ -189,8 +189,8 @@ $user = getCurrentUser();
         <div class="header-content">
             <a href="dashboard.php" class="logo">KITSDB</a>
             <nav class="nav-menu">
-                <a href="kits_list.php" class="nav-link" style="color: var(--highlight-yellow);">Lista Maglie</a>
-                <a href="kit_add.php" class="nav-link">Aggiungi Maglia</a>
+                <a href="kits_list.php" class="nav-link" style="color: var(--highlight-yellow);">Jersey List</a>
+                <a href="kit_add.php" class="nav-link">Add Jersey</a>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -200,64 +200,64 @@ $user = getCurrentUser();
 
     <!-- Main Content -->
     <div class="container">
-        <h1>Lista Maglie</h1>
+        <h1>Jersey List</h1>
         
-        <!-- Filtri e Ricerca -->
+        <!-- Filters and Search -->
         <form method="GET" class="search-filters" id="filterForm">
             <div class="filter-row">
                 <div class="filter-group">
-                    <label>Ricerca</label>
+                    <label>Search</label>
                     <input type="text" 
                            name="search" 
                            value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="Cerca squadra, giocatore, stagione..." 
+                           placeholder="Search team, player, season..." 
                            class="search-input">
                 </div>
                 
                 <div class="filter-group">
                     <label>Brand</label>
                     <select name="brand" id="brandFilter">
-                        <option value="">Tutti i brand</option>
+                        <option value="">All brands</option>
                     </select>
                 </div>
                 
                 <div class="filter-group">
-                    <label>Categoria</label>
+                    <label>Category</label>
                     <select name="category" id="categoryFilter">
-                        <option value="">Tutte le categorie</option>
+                        <option value="">All categories</option>
                     </select>
                 </div>
                 
                 <div class="filter-group">
-                    <label>Tipo</label>
+                    <label>Type</label>
                     <select name="type" id="typeFilter">
-                        <option value="">Tutti i tipi</option>
+                        <option value="">All types</option>
                     </select>
                 </div>
                 
                 <div class="filter-group">
-                    <label>Condizione</label>
+                    <label>Condition</label>
                     <select name="condition" id="conditionFilter">
-                        <option value="">Tutte le condizioni</option>
+                        <option value="">All conditions</option>
                     </select>
                 </div>
                 
                 <div class="filter-group" style="display: flex; gap: 0.5rem;">
-                    <button type="submit" class="btn btn-primary">Filtra</button>
+                    <button type="submit" class="btn btn-primary">Filter</button>
                     <a href="kits_list.php" class="btn btn-secondary">Reset</a>
                 </div>
             </div>
         </form>
         
-        <!-- Risultati -->
+        <!-- Results -->
         <div class="results-info">
-            Trovate <?php echo number_format($total_kits); ?> maglie
+Found <?php echo number_format($total_kits); ?> jerseys
             <?php if ($total_pages > 1): ?>
-                - Pagina <?php echo $page; ?> di <?php echo $total_pages; ?>
+                - Page <?php echo $page; ?> of <?php echo $total_pages; ?>
             <?php endif; ?>
         </div>
         
-        <!-- Lista Kits -->
+        <!-- Kit List -->
         <div class="kit-grid">
             <?php foreach ($kits as $kit): ?>
                 <div class="kit-card">
@@ -269,10 +269,10 @@ $user = getCurrentUser();
                                  onerror="this.style.display='none'">
                         <?php endif; ?>
                         
-                        <!-- Anteprima SVG dinamica -->
+                        <!-- Dynamic SVG preview -->
                         <div class="svg-preview">
                             <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
-                                 alt="Preview maglia" 
+                                 alt="Jersey preview" 
                                  style="max-width: 80px; height: auto;"
                                  loading="lazy">
                         </div>
@@ -285,17 +285,17 @@ $user = getCurrentUser();
                             <?php if ($kit['player_name']): ?>
                                 <div><strong><?php echo htmlspecialchars($kit['player_name']); ?></strong> #<?php echo $kit['number']; ?></div>
                             <?php else: ?>
-                                <div>Numero: <?php echo $kit['number']; ?></div>
+                                <div>Number: <?php echo $kit['number']; ?></div>
                             <?php endif; ?>
                             
-                            <div>Stagione: <?php echo htmlspecialchars($kit['season']); ?></div>
+                            <div>Season: <?php echo htmlspecialchars($kit['season']); ?></div>
                             
                             <?php if ($kit['brand_name']): ?>
                                 <div><?php echo htmlspecialchars($kit['brand_name']); ?></div>
                             <?php endif; ?>
                             
                             <?php if ($kit['size_name']): ?>
-                                <div>Taglia: <?php echo htmlspecialchars($kit['size_name']); ?></div>
+                                <div>Size: <?php echo htmlspecialchars($kit['size_name']); ?></div>
                             <?php endif; ?>
                             
                             <?php if ($kit['condition_name']): ?>
@@ -305,10 +305,10 @@ $user = getCurrentUser();
                                 </div>
                             <?php endif; ?>
                             
-                            <div><?php echo $kit['photo_count']; ?> foto</div>
+                            <div><?php echo $kit['photo_count']; ?> photos</div>
                         </div>
                         
-                        <!-- Colori -->
+                        <!-- Colors -->
                         <?php if ($kit['color1_hex'] || $kit['color2_hex'] || $kit['color3_hex']): ?>
                             <div class="kit-colors">
                                 <?php if ($kit['color1_hex']): ?>
@@ -331,10 +331,10 @@ $user = getCurrentUser();
                     </div>
                     
                     <div class="kit-actions">
-                        <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit">Modifica</a>
+                        <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit">Edit</a>
                         <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
                            class="action-btn delete"
-                           onclick="return confirm('Sei sicuro di voler eliminare questa maglia?')">Elimina</a>
+                           onclick="return confirm('Are you sure you want to delete this jersey?')">Delete</a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -342,16 +342,16 @@ $user = getCurrentUser();
         
         <?php if (empty($kits)): ?>
             <div class="card" style="text-align: center; padding: 3rem;">
-                <h3>Nessuna maglia trovata</h3>
-                <p>Prova a modificare i filtri di ricerca o <a href="kit_add.php">aggiungi una nuova maglia</a>.</p>
+                <h3>No jerseys found</h3>
+                <p>Try changing the search filters or <a href="kit_add.php">add a new jersey</a>.</p>
             </div>
         <?php endif; ?>
         
-        <!-- Paginazione -->
+        <!-- Pagination -->
         <?php if ($total_pages > 1): ?>
             <div class="pagination">
                 <?php if ($page > 1): ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">‹ Precedente</a>
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">‹ Previous</a>
                 <?php endif; ?>
                 
                 <?php
@@ -377,14 +377,14 @@ $user = getCurrentUser();
                 <?php endif; ?>
                 
                 <?php if ($page < $total_pages): ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">Successiva ›</a>
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">Next ›</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>
 
     <script>
-    // Carica le opzioni dei filtri
+    // Load filter options
     document.addEventListener('DOMContentLoaded', function() {
         const filterTypes = ['brands', 'categories', 'jersey_types', 'conditions'];
         const filterElements = {
@@ -394,7 +394,7 @@ $user = getCurrentUser();
             'conditions': document.getElementById('conditionFilter')
         };
         
-        // Carica ogni tipo di filtro
+        // Load each filter type
         filterTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
                 .then(response => response.json())
@@ -406,7 +406,7 @@ $user = getCurrentUser();
                             option.value = item.id;
                             option.textContent = item.name;
                             
-                            // Mantieni selezione corrente
+                            // Keep current selection
                             const currentValue = new URLSearchParams(window.location.search).get(
                                 select.name
                             );
@@ -421,14 +421,14 @@ $user = getCurrentUser();
                 .catch(console.error);
         });
         
-        // Auto-submit su cambio filtri
+        // Auto-submit on filter change
         document.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => {
                 document.getElementById('filterForm').submit();
             });
         });
         
-        // Submit su Enter nella ricerca
+        // Submit on Enter in search
         document.querySelector('input[name="search"]').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('filterForm').submit();
