@@ -234,13 +234,61 @@ $user = getCurrentUser();
         .existing-photo-item.marked-for-deletion {
             opacity: 0.5;
             border-color: var(--action-red);
+            transform: scale(0.9);
+            transition: all 0.3s ease;
         }
         
-        .delete-photo-checkbox {
+        .delete-photo-btn {
             position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            transform: scale(1.2);
+            top: -25px;
+            right: -25px;
+            background: var(--action-red);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        .delete-photo-btn:hover {
+            background: #c13544;
+            transform: scale(1.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: var(--surface);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
         
         .photo-upload-section {
@@ -504,37 +552,40 @@ $user = getCurrentUser();
                 <h3>Existing Photos</h3>
                 <div class="existing-photos">
                     <?php foreach ($existing_photos as $photo): ?>
-                    <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>">
-                        <input type="checkbox" name="delete_photos[]" value="<?php echo $photo['photo_id']; ?>" 
-                               class="delete-photo-checkbox" onchange="togglePhotoDelete(<?php echo $photo['photo_id']; ?>)">
-                        
-                        <?php
-                        $photoPath = null;
-                        $possiblePaths = [
-                            'uploads/front/' . $photo['filename'],
-                            'uploads/back/' . $photo['filename'], 
-                            'uploads/extra/' . $photo['filename']
-                        ];
-                        foreach ($possiblePaths as $path) {
-                            if (file_exists(__DIR__ . '/' . $path)) {
-                                $photoPath = $path;
-                                break;
+                    <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>" data-photo-id="<?php echo $photo['photo_id']; ?>">
+                        <div style="position: relative;">
+                            <button type="button" class="delete-photo-btn" onclick="deleteExistingPhoto(<?php echo $photo['photo_id']; ?>)">
+                                ✕
+                            </button>
+                            
+                            <?php
+                            $photoPath = null;
+                            $possiblePaths = [
+                                'uploads/front/' . $photo['filename'],
+                                'uploads/back/' . $photo['filename'], 
+                                'uploads/extra/' . $photo['filename']
+                            ];
+                            foreach ($possiblePaths as $path) {
+                                if (file_exists(__DIR__ . '/' . $path)) {
+                                    $photoPath = $path;
+                                    break;
+                                }
                             }
-                        }
-                        ?>
-                        
-                        <?php if ($photoPath): ?>
-                            <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Photo'); ?>" class="file-thumbnail">
-                        <?php else: ?>
-                            <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
-                                📷 <br><small>File non trovato</small>
-                            </div>
-                        <?php endif; ?>
+                            ?>
+                            
+                            <?php if ($photoPath): ?>
+                                <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Photo'); ?>" class="file-thumbnail">
+                            <?php else: ?>
+                                <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
+                                    📷 <br><small>File not found</small>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                         
                         <div class="file-info">
                             <div><strong><?php echo htmlspecialchars($photo['title'] ?: $photo['filename']); ?></strong></div>
                             <div><small><?php echo htmlspecialchars($photo['classification_name'] ?? 'N/A'); ?></small></div>
-                            <div><small>Caricata: <?php echo date('d/m/Y H:i', strtotime($photo['uploaded_at'])); ?></small></div>
+                            <div><small>Uploaded: <?php echo date('d/m/Y H:i', strtotime($photo['uploaded_at'])); ?></small></div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -559,12 +610,27 @@ $user = getCurrentUser();
                 </div>
             </div>
 
+            <!-- Hidden input to track deleted photos -->
+            <div id="deleted-photos-container"></div>
+            
             <div style="text-align: center; margin-top: var(--space-lg);">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Save Changes</button>
-                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</a>
+                <button type="button" id="cancel-btn" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</button>
             </div>
         </form>
         <?php endif; ?>
+    </div>
+
+    <!-- Modal for unsaved changes -->
+    <div id="unsaved-modal" class="modal">
+        <div class="modal-content">
+            <h3>Attention: You have unsaved changes</h3>
+            <p>Do you want to discard your changes?</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Stay</button>
+                <button type="button" class="btn btn-primary" onclick="discardChanges()">Discard Changes</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -576,17 +642,111 @@ $user = getCurrentUser();
         setupFileUpload();
         setupSizeSelectors();
         setupLivePreview();
+        trackFormChanges();
+        setupCancelButton();
     });
 
-    function togglePhotoDelete(photoId) {
+    // Track changes for modal confirmation
+    let hasUnsavedChanges = false;
+    let deletedPhotos = new Set();
+    
+    function deleteExistingPhoto(photoId) {
+        console.log('Deleting photo:', photoId);
         const photoItem = document.getElementById('photo-' + photoId);
-        const checkbox = photoItem.querySelector('.delete-photo-checkbox');
         
-        if (checkbox.checked) {
+        if (photoItem) {
+            // Mark as deleted with visual effect
             photoItem.classList.add('marked-for-deletion');
+            
+            // Add to deleted photos set
+            deletedPhotos.add(photoId);
+            
+            // Update hidden inputs for form submission
+            updateDeletedPhotosInput();
+            
+            // Mark as having unsaved changes
+            hasUnsavedChanges = true;
+            
+            console.log('Photo marked for deletion successfully');
         } else {
-            photoItem.classList.remove('marked-for-deletion');
+            console.error('Photo item not found for ID:', photoId);
         }
+    }
+    
+    function updateDeletedPhotosInput() {
+        const container = document.getElementById('deleted-photos-container');
+        if (!container) {
+            console.error('Deleted photos container not found');
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        deletedPhotos.forEach(photoId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_photos[]';
+            input.value = photoId;
+            container.appendChild(input);
+        });
+    }
+    
+    function trackFormChanges() {
+        const form = document.getElementById('kitForm');
+        if (!form) return;
+        
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                hasUnsavedChanges = true;
+            });
+            input.addEventListener('change', () => {
+                hasUnsavedChanges = true;
+            });
+        });
+    }
+    
+    function setupCancelButton() {
+        const cancelBtn = document.getElementById('cancel-btn');
+        if (!cancelBtn) return;
+        
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (hasUnsavedChanges || deletedPhotos.size > 0 || selectedFiles.length > 0) {
+                document.getElementById('unsaved-modal').style.display = 'block';
+            } else {
+                window.location.href = 'kits_list.php';
+            }
+        });
+    }
+    
+    function closeModal() {
+        document.getElementById('unsaved-modal').style.display = 'none';
+    }
+    
+    function discardChanges() {
+        // Reset deleted photos - show them again
+        deletedPhotos.forEach(photoId => {
+            const photoItem = document.getElementById('photo-' + photoId);
+            if (photoItem) {
+                photoItem.classList.remove('marked-for-deletion');
+            }
+        });
+        
+        // Clear tracking
+        deletedPhotos.clear();
+        hasUnsavedChanges = false;
+        
+        // Clear hidden inputs
+        const container = document.getElementById('deleted-photos-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        
+        // Navigate away
+        window.location.href = 'kits_list.php';
     }
 
     function loadLookupData() {
