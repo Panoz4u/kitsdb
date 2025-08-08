@@ -386,32 +386,115 @@ $user = getCurrentUser();
                     <input type="hidden" name="size_id" id="size_id" value="<?php echo $kit['size_id']; ?>">
                 </div>
 
-                <!-- Colori -->
+                <!-- Colors -->
                 <div class="form-group">
-                    <label for="color1_id">Colore Primario</label>
-                    <select name="color1_id" id="color1_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color1_id">Primary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color1_id" id="color1_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color1_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #333;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color2_id">Colore Secondario</label>
-                    <select name="color2_id" id="color2_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color2_id">Secondary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color2_id" id="color2_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color2_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #fff;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color3_id">Colore Terziario</label>
-                    <select name="color3_id" id="color3_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color3_id">Tertiary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color3_id" id="color3_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color3_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: transparent;"></div>
+                    </div>
                 </div>
 
                 <!-- Note -->
                 <div class="form-group full-width">
                     <label for="notes">Note</label>
                     <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
+                </div>
+            </div>
+
+            <!-- Preview Jersey Live -->
+            <div class="svg-preview-container">
+                <h3>Jersey Preview</h3>
+                <div id="live-preview" style="display: flex; justify-content: center;">
+                    <div style="position: relative;">
+                        <svg width="200" height="200" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 200px; max-height: 200px;">
+                            <!-- Jersey borders/outline (secondary color - originally gray #4B5563) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyBorder">
+                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#4B5563"/>
+                            </g>
+                            
+                            <!-- Jersey inner area (primary color - originally transparent) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyInner">
+                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#ffffff" fill-opacity="0.9"/>
+                            </g>
+                            
+                            <!-- V-neck cutout (transparent) -->
+                            <path d="M 2000 800 L 2133 1200 L 2267 800 C 2240 850 2180 900 2133 900 C 2086 900 2026 850 2000 800 Z" 
+                                  fill="none" stroke="none"/>
+                            
+                            <!-- Player name text -->
+                            <text id="playerNameText" x="2133" y="1900" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="600" fill="#000000"></text>
+                            
+                            <!-- Number text -->
+                            <text id="numberText" x="2133" y="3100" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="1000" fill="#000000"></text>
+                        </svg>
+                        
+                    </div>
                 </div>
             </div>
 
@@ -492,6 +575,7 @@ $user = getCurrentUser();
         setupAutocomplete();
         setupFileUpload();
         setupSizeSelectors();
+        setupLivePreview();
     });
 
     function togglePhotoDelete(photoId) {
@@ -506,7 +590,7 @@ $user = getCurrentUser();
     }
 
     function loadLookupData() {
-        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons'];
+        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons', 'photo_classifications'];
         
         lookupTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
@@ -520,6 +604,8 @@ $user = getCurrentUser();
                         populateJerseyTypes(data);
                     } else if (type === 'colors') {
                         populateColors(data);
+                    } else if (type === 'photo_classifications') {
+                        window.photoClassifications = data;
                     } else {
                         populateSelect(type, data);
                     }
@@ -563,7 +649,18 @@ $user = getCurrentUser();
         const container = document.getElementById('size-selector');
         container.innerHTML = '';
         
-        data.forEach(size => {
+        // Custom order with YTH before XS
+        const customOrder = ['YTH', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        const sortedData = data.sort((a, b) => {
+            const aIndex = customOrder.indexOf(a.name);
+            const bIndex = customOrder.indexOf(b.name);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        sortedData.forEach(size => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'size-btn';
@@ -659,6 +756,27 @@ $user = getCurrentUser();
                 
                 select.appendChild(option);
             });
+            
+            // Add change listener to update color swatch
+            select.addEventListener('change', function() {
+                const swatchId = selectId.replace('_id', '_swatch');
+                const swatch = document.getElementById(swatchId);
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.dataset.hex) {
+                    swatch.style.background = selectedOption.dataset.hex;
+                } else {
+                    swatch.style.background = 'transparent';
+                }
+            });
+            
+            // Set initial swatch color for pre-selected values
+            const initialOption = select.options[select.selectedIndex];
+            if (initialOption && initialOption.dataset.hex) {
+                const swatchId = selectId.replace('_id', '_swatch');
+                const swatch = document.getElementById(swatchId);
+                swatch.style.background = initialOption.dataset.hex;
+            }
         });
     }
 
@@ -824,10 +942,7 @@ $user = getCurrentUser();
                     <option value="extra">Extra</option>
                 </select>
                 <select name="photo_classifications[]" class="file-name-input">
-                    <option value="1">Match</option>
-                    <option value="2">Web</option>
-                    <option value="3">Store</option>
-                    <option value="4">Altro</option>
+                    ${generateClassificationOptions()}
                 </select>
             </div>
         `;
@@ -852,6 +967,92 @@ $user = getCurrentUser();
         
         // Update the preview
         updateFilePreview();
+    }
+
+    function generateClassificationOptions() {
+        if (!window.photoClassifications) {
+            return `
+                <option value="1">Match</option>
+                <option value="2">Web</option>
+                <option value="3">Store</option>
+                <option value="4">Other</option>
+            `;
+        }
+        
+        return window.photoClassifications.map(item => 
+            `<option value="${item.id}">${item.name}</option>`
+        ).join('');
+    }
+
+    function setupLivePreview() {
+        // Form elements that affect preview
+        const numberInput = document.getElementById('number');
+        const playerInput = document.getElementById('player_name');
+        const color1Select = document.getElementById('color1_id');
+        const color2Select = document.getElementById('color2_id');
+        const color3Select = document.getElementById('color3_id');
+        
+        // Function to update preview
+        function updatePreview() {
+            const number = numberInput.value || '';
+            let playerName = playerInput.value.toUpperCase();
+            
+            // Truncate player name if longer than 9 characters
+            if (playerName.length > 9) {
+                playerName = playerName.substring(0, 9) + '.';
+            }
+            
+            // Get selected colors using hex from database
+            const color1 = getSelectedColorHex(color1Select) || '#ffffff'; // Primary (inner jersey)
+            const color2 = getSelectedColorHex(color2Select) || '#4B5563'; // Secondary (borders)
+            
+            // Update jersey colors in SVG
+            const jerseyInner = document.getElementById('jerseyInner');
+            const jerseyBorder = document.getElementById('jerseyBorder');
+            
+            if (jerseyInner) {
+                jerseyInner.querySelector('path').setAttribute('fill', color1);
+            }
+            if (jerseyBorder) {
+                jerseyBorder.querySelector('path').setAttribute('fill', color2);
+            }
+            
+            // Update player name text
+            const playerNameText = document.getElementById('playerNameText');
+            if (playerNameText) {
+                playerNameText.textContent = playerName;
+                // Set text color based on primary jersey color contrast (since it's in the primary color area)
+                const nameTextColor = getContrastColor(color1);
+                playerNameText.setAttribute('fill', nameTextColor);
+            }
+            
+            // Update number text
+            const numberText = document.getElementById('numberText');
+            if (numberText) {
+                numberText.textContent = number;
+                // Set text color based on secondary jersey color contrast (for the bottom area)
+                const numberTextColor = getContrastColor(color2);
+                numberText.setAttribute('fill', numberTextColor);
+            }
+        }
+        
+        function getSelectedColorHex(selectElement) {
+            if (!selectElement.value) return null;
+            
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            return selectedOption.dataset.hex || null;
+        }
+        
+        
+        // Event listeners
+        numberInput.addEventListener('input', updatePreview);
+        playerInput.addEventListener('input', updatePreview);
+        color1Select.addEventListener('change', updatePreview);
+        color2Select.addEventListener('change', updatePreview);
+        color3Select.addEventListener('change', updatePreview);
+        
+        // Initial update after a short delay to ensure data is loaded
+        setTimeout(updatePreview, 1000);
     }
     </script>
 </body>
