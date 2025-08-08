@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        $success = "Maglia aggiunta con successo! ID: $kit_id";
+        $success = "Jersey added successfully! ID: $kit_id";
         
         // Reset form dopo successo
         if ($success) {
@@ -111,7 +111,7 @@ $user = getCurrentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aggiungi Maglia - KITSDB</title>
+    <title>Add Jersey - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .form-grid {
@@ -181,8 +181,8 @@ $user = getCurrentUser();
         <div class="header-content">
             <a href="dashboard.php" class="logo">KITSDB</a>
             <nav class="nav-menu">
-                <a href="kits_list.php" class="nav-link">Lista Maglie</a>
-                <a href="kit_add.php" class="nav-link" style="color: var(--highlight-yellow);">Aggiungi Maglia</a>
+                <a href="kits_list.php" class="nav-link">Jersey List</a>
+                <a href="kit_add.php" class="nav-link" style="color: var(--highlight-yellow);">Add Jersey</a>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -192,7 +192,7 @@ $user = getCurrentUser();
 
     <!-- Main Content -->
     <div class="container">
-        <h1>Aggiungi Nuova Maglia</h1>
+        <h1>Add New Jersey</h1>
         
         <?php if ($error): ?>
             <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
@@ -434,7 +434,7 @@ $user = getCurrentUser();
     });
 
     function loadLookupData() {
-        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons'];
+        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons', 'photo_classifications'];
         
         lookupTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
@@ -448,6 +448,8 @@ $user = getCurrentUser();
                         populateJerseyTypes(data);
                     } else if (type === 'colors') {
                         populateColors(data);
+                    } else if (type === 'photo_classifications') {
+                        window.photoClassifications = data;
                     } else {
                         populateSelect(type, data);
                     }
@@ -725,6 +727,21 @@ $user = getCurrentUser();
         });
     }
 
+    function generateClassificationOptions() {
+        if (!window.photoClassifications) {
+            return `
+                <option value="1">Match</option>
+                <option value="2">Web</option>
+                <option value="3">Store</option>
+                <option value="4">Other</option>
+            `;
+        }
+        
+        return window.photoClassifications.map(item => 
+            `<option value="${item.id}">${item.name}</option>`
+        ).join('');
+    }
+
     function createFilePreview(file, src, index) {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
@@ -747,10 +764,7 @@ $user = getCurrentUser();
                        placeholder="Photo name..." 
                        class="file-name-input">
                 <select name="photo_classifications[]" class="file-name-input">
-                    <option value="1">Match</option>
-                    <option value="2">Web</option>
-                    <option value="3">Store</option>
-                    <option value="4">Other</option>
+                    ${generateClassificationOptions()}
                 </select>
             </div>
         `;

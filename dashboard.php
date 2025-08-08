@@ -2,26 +2,26 @@
 require_once 'auth.php';
 require_once 'config.php';
 
-// Richiede autenticazione admin
+// Requires admin authentication
 requireAdmin();
 
-// Ottieni statistiche del database
+// Get database statistics
 try {
     $db = getDb();
     
-    // Conta kits
+    // Count kits
     $stmt = $db->query("SELECT COUNT(*) as total FROM kits");
     $kit_count = $stmt->fetch()['total'];
     
-    // Conta foto
+    // Count photos
     $stmt = $db->query("SELECT COUNT(*) as total FROM photos");
     $photo_count = $stmt->fetch()['total'];
     
-    // Conta brands
+    // Count brands
     $stmt = $db->query("SELECT COUNT(*) as total FROM brands");
     $brand_count = $stmt->fetch()['total'];
     
-    // Conta teams
+    // Count teams
     $stmt = $db->query("SELECT COUNT(*) as total FROM teams");
     $team_count = $stmt->fetch()['total'];
     
@@ -32,7 +32,7 @@ try {
 $user = getCurrentUser();
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -190,8 +190,8 @@ $user = getCurrentUser();
         <div class="header-content">
             <a href="dashboard.php" class="logo">KITSDB</a>
             <nav class="nav-menu">
-                <a href="kits_list.php" class="nav-link">Lista Maglie</a>
-                <a href="kit_add.php" class="nav-link">Aggiungi Maglia</a>
+                <a href="kits_list.php" class="nav-link">Jersey List</a>
+                <a href="kit_add.php" class="nav-link">Add Jersey</a>
                 <span class="nav-user"><?php echo htmlspecialchars($user['username']); ?></span>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
@@ -207,8 +207,8 @@ $user = getCurrentUser();
             
             <!-- Mobile Menu -->
             <div class="mobile-menu" id="mobileMenu">
-                <a href="kits_list.php" class="mobile-nav-link">Lista Maglie</a>
-                <a href="kit_add.php" class="mobile-nav-link">Aggiungi Maglia</a>
+                <a href="kits_list.php" class="mobile-nav-link">Jersey List</a>
+                <a href="kit_add.php" class="mobile-nav-link">Add Jersey</a>
                 <form method="POST" action="logout.php">
                     <button type="submit" class="mobile-logout-btn">Logout</button>
                 </form>
@@ -222,20 +222,20 @@ $user = getCurrentUser();
         <div class="quick-actions" style="margin-top: var(--space-lg);">
             <a href="kit_add.php" class="action-card">
                 <div class="action-icon">➕</div>
-                <h3>Aggiungi Nuova Maglia</h3>
-                <p>Inserisci una nuova maglia nella collezione</p>
+                <h3>Add New Jersey</h3>
+                <p>Add a new jersey to the collection</p>
             </a>
             
             <a href="kits_list.php" class="action-card">
                 <div class="action-icon">📋</div>
-                <h3>Visualizza Lista</h3>
-                <p>Sfoglia tutte le maglie con filtri avanzati</p>
+                <h3>View List</h3>
+                <p>Browse all jerseys with advanced filters</p>
             </a>
             
             <a href="nations.php" class="action-card">
                 <div class="action-icon">🌍</div>
-                <h3>Gestisci Nazioni</h3>
-                <p>Visualizza e gestisci le nazioni</p>
+                <h3>Manage Nations</h3>
+                <p>View and manage nations</p>
             </a>
         </div>
 
@@ -246,22 +246,22 @@ $user = getCurrentUser();
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?php echo number_format($kit_count); ?></div>
-                <div class="stat-label">Maglie Totali</div>
+                <div class="stat-label">Total Jerseys</div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-number"><?php echo number_format($photo_count); ?></div>
-                <div class="stat-label">Foto Caricate</div>
+                <div class="stat-label">Photos Uploaded</div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-number"><?php echo number_format($brand_count); ?></div>
-                <div class="stat-label">Brand Disponibili</div>
+                <div class="stat-label">Available Brands</div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-number"><?php echo number_format($team_count); ?></div>
-                <div class="stat-label">Squadre nel Database</div>
+                <div class="stat-label">Teams in Database</div>
             </div>
         </div>
     </div>
@@ -272,7 +272,7 @@ $user = getCurrentUser();
         mobileMenu.classList.toggle('active');
     }
     
-    // Chiudi menu quando si clicca fuori
+    // Close menu when clicking outside
     document.addEventListener('click', function(event) {
         const mobileMenu = document.getElementById('mobileMenu');
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');

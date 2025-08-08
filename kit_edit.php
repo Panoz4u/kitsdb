@@ -16,7 +16,7 @@ if ($kit_id <= 0) {
 try {
     $db = getDb();
     
-    // Carica dati maglia esistente
+    // Load existing jersey data
     $stmt = $db->prepare("
         SELECT k.*, t.name as team_name, t.FMID 
         FROM kits k 
@@ -31,7 +31,7 @@ try {
         exit();
     }
     
-    // Carica foto esistenti
+    // Load existing photos
     $photoStmt = $db->prepare("
         SELECT p.*, pc.name as classification_name 
         FROM photos p 
@@ -42,7 +42,7 @@ try {
     $existing_photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
-    $error = 'Errore nel caricamento dei dati: ' . $e->getMessage();
+    $error = 'Error loading data: ' . $e->getMessage();
     $kit = null;
 }
 
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
                 $photo = $photoStmt->fetch();
                 
                 if ($photo) {
-                    // Elimina il file fisico
+                    // Delete physical file
                     $filePaths = [
                         __DIR__ . '/uploads/front/' . $photo['filename'],
                         __DIR__ . '/uploads/back/' . $photo['filename'],
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
                         }
                     }
                     
-                    // Elimina dal database
+                    // Delete from database
                     $deleteStmt = $db->prepare("DELETE FROM photos WHERE photo_id = ? AND kit_id = ?");
                     $deleteStmt->execute([$photo_id, $kit_id]);
                 }
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
             }
         }
         
-        $success = "Maglia aggiornata con successo!";
+        $success = "Jersey updated successfully!";
         
         // Ricarica i dati aggiornati
         $stmt = $db->prepare("
@@ -188,7 +188,7 @@ $user = getCurrentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifica Maglia - KITSDB</title>
+    <title>Edit Jersey - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .form-grid {
@@ -274,8 +274,8 @@ $user = getCurrentUser();
         <div class="header-content">
             <a href="dashboard.php" class="logo">KITSDB</a>
             <nav class="nav-menu">
-                <a href="kits_list.php" class="nav-link">Lista Maglie</a>
-                <a href="kit_add.php" class="nav-link">Aggiungi Maglia</a>
+                <a href="kits_list.php" class="nav-link">Jersey List</a>
+                <a href="kit_add.php" class="nav-link">Add Jersey</a>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -285,7 +285,7 @@ $user = getCurrentUser();
 
     <!-- Main Content -->
     <div class="container">
-        <h1>Modifica Maglia #<?php echo $kit_id; ?></h1>
+        <h1>Edit Jersey #<?php echo $kit_id; ?></h1>
         
         <?php if ($error): ?>
             <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
@@ -304,7 +304,7 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="team_search">Squadra *</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="team_search" placeholder="Cerca squadra..." required 
+                        <input type="text" id="team_search" placeholder="Search team..." required 
                                value="<?php echo htmlspecialchars($kit['team_name']); ?>">
                         <div class="autocomplete-suggestions" id="team_suggestions" style="display: none;"></div>
                     </div>
@@ -361,17 +361,17 @@ $user = getCurrentUser();
                     </select>
                 </div>
 
-                <!-- Tipo Maglia -->
+                <!-- Jersey Type -->
                 <div class="form-group">
-                    <label for="jersey_type_id">Tipo Maglia</label>
+                    <label for="jersey_type_id">Jersey Type</label>
                     <select name="jersey_type_id" id="jersey_type_id">
                         <option value="">Seleziona tipo...</option>
                     </select>
                 </div>
 
-                <!-- Condizione -->
+                <!-- Condition -->
                 <div class="form-group">
-                    <label for="condition_id">Condizione</label>
+                    <label for="condition_id">Condition</label>
                     <select name="condition_id" id="condition_id">
                         <option value="">Seleziona condizione...</option>
                     </select>
@@ -379,7 +379,7 @@ $user = getCurrentUser();
 
                 <!-- Taglie -->
                 <div class="form-group full-width">
-                    <label>Taglia</label>
+                    <label>Size</label>
                     <div class="size-selector" id="size-selector">
                         <!-- Caricate via JS -->
                     </div>
@@ -415,10 +415,10 @@ $user = getCurrentUser();
                 </div>
             </div>
 
-            <!-- Foto Esistenti -->
+            <!-- Existing Photos -->
             <?php if (!empty($existing_photos)): ?>
             <div class="section">
-                <h3>Foto Esistenti</h3>
+                <h3>Existing Photos</h3>
                 <div class="existing-photos">
                     <?php foreach ($existing_photos as $photo): ?>
                     <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>">
@@ -441,7 +441,7 @@ $user = getCurrentUser();
                         ?>
                         
                         <?php if ($photoPath): ?>
-                            <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Foto'); ?>" class="file-thumbnail">
+                            <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Photo'); ?>" class="file-thumbnail">
                         <?php else: ?>
                             <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
                                 📷 <br><small>File non trovato</small>
@@ -459,9 +459,9 @@ $user = getCurrentUser();
             </div>
             <?php endif; ?>
 
-            <!-- Upload Nuove Foto -->
+            <!-- Upload New Photos -->
             <div class="photo-upload-section">
-                <h3>Aggiungi Nuove Foto</h3>
+                <h3>Add New Photos</h3>
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">
@@ -477,8 +477,8 @@ $user = getCurrentUser();
             </div>
 
             <div style="text-align: center; margin-top: var(--space-lg);">
-                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Salva Modifiche</button>
-                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Annulla</a>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Save Changes</button>
+                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</a>
             </div>
         </form>
         <?php endif; ?>

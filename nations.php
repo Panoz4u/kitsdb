@@ -7,10 +7,10 @@ $stmt = $pdo->query('SELECT nation_id, name FROM nations ORDER BY name');
 $nations = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lista Nazioni</title>
+  <title>Nations List</title>
   <style>
     body { font-family: sans-serif; margin: 2rem; }
     table { border-collapse: collapse; width: 100%; max-width: 400px; }
@@ -18,12 +18,12 @@ $nations = $stmt->fetchAll();
   </style>
 </head>
 <body>
-  <h1>Elenco Nazioni</h1>
+  <h1>Nations List</h1>
   <?php if (!$nations): ?>
-    <p>Nessuna nazione trovata.</p>
+    <p>No nations found.</p>
   <?php else: ?>
     <table>
-      <tr><th>ID</th><th>Nome</th></tr>
+      <tr><th>ID</th><th>Name</th></tr>
       <?php foreach ($nations as $n): ?>
         <tr>
           <td><?= htmlspecialchars($n['nation_id']) ?></td>

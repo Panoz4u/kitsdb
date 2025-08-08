@@ -66,7 +66,7 @@ try {
             break;
             
         case 'photo_classifications':
-            $stmt = $db->query("SELECT classification_id as id, name FROM photo_classifications ORDER BY name");
+            $stmt = $db->query("SELECT classification_id as id, name FROM photo_classifications ORDER BY classification_id");
             $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
             break;
             
