@@ -513,6 +513,12 @@ p {
   font-size: 0.9rem;
 }
 
+.action-btn.view {
+  background: var(--surface);
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+}
+
 .action-btn.edit {
   background: var(--highlight-yellow);
   color: var(--background);
