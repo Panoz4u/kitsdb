@@ -10,6 +10,7 @@ $brand_filter = $_GET['brand'] ?? '';
 $category_filter = $_GET['category'] ?? '';
 $type_filter = $_GET['type'] ?? '';
 $condition_filter = $_GET['condition'] ?? '';
+$view_mode = $_GET['view'] ?? 'cards'; // cards or list
 $page = max(1, intval($_GET['page'] ?? 1));
 $per_page = 24;
 $offset = ($page - 1) * $per_page;
@@ -117,6 +118,226 @@ $user = getCurrentUser();
     <title>Jersey List - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Top search and controls section */
+        .search-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: var(--space-lg);
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-main {
+            flex: 1;
+        }
+        
+        .search-main input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background: var(--background);
+            color: var(--primary-text);
+            font-size: 1rem;
+            height: 48px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+        
+        .search-main input:focus {
+            outline: none;
+            border-color: var(--highlight-yellow);
+            box-shadow: 0 0 0 2px rgba(220, 247, 99, 0.2);
+        }
+        
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        /* Results header with view toggle */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: var(--background);
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--primary-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .view-btn.active {
+            background: var(--action-red);
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background: var(--action-red);
+            color: white;
+        }
+        
+        .filters-toggle {
+            background: var(--action-red);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 48px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            margin-top: -5px;
+        }
+        
+        .filters-toggle:hover {
+            background: #c23842;
+        }
+        
+        /* Filters panel */
+        .filters-panel {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: var(--space-lg);
+            display: none;
+        }
+        
+        .filters-panel.active {
+            display: block;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-text);
+            font-weight: 500;
+        }
+        
+        .filter-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background: var(--background);
+            color: var(--primary-text);
+        }
+        
+        .filters-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        /* List view styles */
+        .kit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .kit-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+        
+        .kit-list-item:hover {
+            border-color: var(--action-red);
+            box-shadow: 0 2px 8px rgba(222, 60, 75, 0.2);
+        }
+        
+        .list-preview {
+            width: 40px;
+            height: 40px;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .list-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .list-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            min-width: 0;
+        }
+        
+        .list-team {
+            font-weight: 600;
+            color: var(--primary-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .list-player {
+            color: var(--secondary-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .list-detail {
+            color: var(--secondary-text);
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .list-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .list-actions .action-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Existing pagination styles */
         .pagination {
             display: flex;
             justify-content: center;
@@ -150,9 +371,7 @@ $user = getCurrentUser();
         }
         
         .results-info {
-            text-align: center;
             color: var(--secondary-text);
-            margin-bottom: var(--space-md);
         }
         
         .team-logo {
@@ -181,9 +400,18 @@ $user = getCurrentUser();
             color: var(--highlight-yellow);
             font-size: 0.9rem;
         }
+        
+        /* Hide card grid when in list view */
+        body[data-view="list"] .kit-grid {
+            display: none;
+        }
+        
+        body[data-view="cards"] .kit-list {
+            display: none;
+        }
     </style>
 </head>
-<body>
+<body data-view="<?php echo $view_mode; ?>">
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -202,62 +430,103 @@ $user = getCurrentUser();
     <div class="container">
         <h1>Jersey List</h1>
         
-        <!-- Filters and Search -->
-        <form method="GET" class="search-filters" id="filterForm">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>Search</label>
+        <!-- Search and Filters Controls -->
+        <div class="search-controls">
+            <div class="search-main">
+                <form method="GET" id="searchForm">
+                    <input type="hidden" name="view" value="<?php echo htmlspecialchars($view_mode); ?>">
+                    <input type="hidden" name="brand" value="<?php echo htmlspecialchars($brand_filter); ?>">
+                    <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_filter); ?>">
+                    <input type="hidden" name="type" value="<?php echo htmlspecialchars($type_filter); ?>">
+                    <input type="hidden" name="condition" value="<?php echo htmlspecialchars($condition_filter); ?>">
                     <input type="text" 
                            name="search" 
                            value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="Search team, player, season..." 
-                           class="search-input">
-                </div>
-                
-                <div class="filter-group">
-                    <label>Brand</label>
-                    <select name="brand" id="brandFilter">
-                        <option value="">All brands</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Category</label>
-                    <select name="category" id="categoryFilter">
-                        <option value="">All categories</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Type</label>
-                    <select name="type" id="typeFilter">
-                        <option value="">All types</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Condition</label>
-                    <select name="condition" id="conditionFilter">
-                        <option value="">All conditions</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group" style="display: flex; gap: 0.5rem;">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="kits_list.php" class="btn btn-secondary">Reset</a>
-                </div>
+                           placeholder="Search team, player, season...">
+                </form>
             </div>
-        </form>
-        
-        <!-- Results -->
-        <div class="results-info">
-Found <?php echo number_format($total_kits); ?> jerseys
-            <?php if ($total_pages > 1): ?>
-                - Page <?php echo $page; ?> of <?php echo $total_pages; ?>
-            <?php endif; ?>
+            
+            <div class="controls-right">
+                <button class="filters-toggle" onclick="toggleFilters()">
+                    Filters
+                    <?php 
+                    $active_filters = 0;
+                    if (!empty($brand_filter)) $active_filters++;
+                    if (!empty($category_filter)) $active_filters++;
+                    if (!empty($type_filter)) $active_filters++;
+                    if (!empty($condition_filter)) $active_filters++;
+                    if ($active_filters > 0): ?>
+                        <span style="margin-left: 0.25rem;">(<?php echo $active_filters; ?>)</span>
+                    <?php endif; ?>
+                </button>
+            </div>
         </div>
         
-        <!-- Kit List -->
+        <!-- Filters Panel -->
+        <div class="filters-panel" id="filtersPanel">
+            <form method="GET" id="filterForm">
+                <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
+                <input type="hidden" name="view" value="<?php echo htmlspecialchars($view_mode); ?>">
+                
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Brand</label>
+                        <select name="brand" id="brandFilter">
+                            <option value="">All brands</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select name="category" id="categoryFilter">
+                            <option value="">All categories</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Type</label>
+                        <select name="type" id="typeFilter">
+                            <option value="">All types</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Condition</label>
+                        <select name="condition" id="conditionFilter">
+                            <option value="">All conditions</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filters-actions">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Results and View Toggle -->
+        <div class="results-header">
+            <div class="results-info">
+                Found <?php echo number_format($total_kits); ?> jerseys
+                <?php if ($total_pages > 1): ?>
+                    - Page <?php echo $page; ?> of <?php echo $total_pages; ?>
+                <?php endif; ?>
+            </div>
+            
+            <div class="view-toggle">
+                <a href="?<?php echo http_build_query(array_merge($_GET, ['view' => 'cards'])); ?>" 
+                   class="view-btn <?php echo $view_mode === 'cards' ? 'active' : ''; ?>">
+                    ⊞ Cards
+                </a>
+                <a href="?<?php echo http_build_query(array_merge($_GET, ['view' => 'list'])); ?>" 
+                   class="view-btn <?php echo $view_mode === 'list' ? 'active' : ''; ?>">
+                    ☰ List
+                </a>
+            </div>
+        </div>
+        
+        <!-- Kit Grid (Cards View) -->
         <div class="kit-grid">
             <?php foreach ($kits as $kit): ?>
                 <div class="kit-card">
@@ -340,6 +609,61 @@ Found <?php echo number_format($total_kits); ?> jerseys
             <?php endforeach; ?>
         </div>
         
+        <!-- Kit List (List View) -->
+        <div class="kit-list">
+            <?php foreach ($kits as $kit): ?>
+                <div class="kit-list-item">
+                    <div class="list-preview">
+                        <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
+                             alt="Jersey preview" 
+                             loading="lazy">
+                    </div>
+                    
+                    <div class="list-content">
+                        <div class="list-team">
+                            <?php echo htmlspecialchars($kit['team_name'] ?? 'N/A'); ?>
+                        </div>
+                        
+                        <div class="list-player">
+                            <?php if ($kit['player_name']): ?>
+                                <?php echo htmlspecialchars($kit['player_name']); ?> #<?php echo $kit['number']; ?>
+                            <?php else: ?>
+                                #<?php echo $kit['number']; ?>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="list-detail">
+                            <?php echo htmlspecialchars($kit['season']); ?>
+                        </div>
+                        
+                        <div class="list-detail">
+                            <?php echo htmlspecialchars($kit['brand_name'] ?? 'N/A'); ?>
+                        </div>
+                        
+                        <div class="list-detail">
+                            <?php echo htmlspecialchars($kit['size_name'] ?? 'N/A'); ?>
+                        </div>
+                        
+                        <div class="list-detail">
+                            <?php if ($kit['condition_name']): ?>
+                                <?php echo htmlspecialchars($kit['condition_name']); ?>
+                                <?php for ($i = 0; $i < $kit['condition_stars']; $i++): ?>⭐<?php endfor; ?>
+                            <?php else: ?>
+                                N/A
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="list-actions">
+                            <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit">Edit</a>
+                            <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
+                               class="action-btn delete"
+                               onclick="return confirm('Are you sure you want to delete this jersey?')">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
         <?php if (empty($kits)): ?>
             <div class="card" style="text-align: center; padding: 3rem;">
                 <h3>No jerseys found</h3>
@@ -384,6 +708,21 @@ Found <?php echo number_format($total_kits); ?> jerseys
     </div>
 
     <script>
+    // Toggle filters panel
+    function toggleFilters() {
+        const panel = document.getElementById('filtersPanel');
+        panel.classList.toggle('active');
+    }
+    
+    // Reset filters function
+    function resetFilters() {
+        document.getElementById('brandFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('typeFilter').value = '';
+        document.getElementById('conditionFilter').value = '';
+        // Keep the panel open after reset
+    }
+    
     // Load filter options
     document.addEventListener('DOMContentLoaded', function() {
         const filterTypes = ['brands', 'categories', 'jersey_types', 'conditions'];
@@ -421,18 +760,24 @@ Found <?php echo number_format($total_kits); ?> jerseys
                 .catch(console.error);
         });
         
-        // Auto-submit on filter change
-        document.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', () => {
-                document.getElementById('filterForm').submit();
-            });
+        // Remove auto-submit from filter dropdowns - only submit when Apply Filters is clicked
+        // No event listeners on filter selects anymore
+        
+        // Submit search on Enter
+        document.querySelector('#searchForm input[name="search"]').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm').submit();
+            }
         });
         
-        // Submit on Enter in search
-        document.querySelector('input[name="search"]').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('filterForm').submit();
-            }
+        // Auto-submit search after typing (with debounce)
+        let searchTimeout;
+        document.querySelector('#searchForm input[name="search"]').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('searchForm').submit();
+            }, 500);
         });
     });
     </script>
