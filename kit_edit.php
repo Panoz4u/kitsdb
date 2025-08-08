@@ -317,19 +317,7 @@ $user = getCurrentUser();
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <a href="dashboard.php" class="logo">KITSDB</a>
-            <nav class="nav-menu">
-                <a href="kits_list.php" class="nav-link">Jersey List</a>
-                <a href="kit_add.php" class="nav-link">Add Jersey</a>
-                <form method="POST" action="logout.php" style="display: inline;">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
-            </nav>
-        </div>
-    </header>
+    <?php include 'includes/admin_header.php'; ?>
 
     <!-- Main Content -->
     <div class="container">
