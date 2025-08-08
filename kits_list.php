@@ -4,6 +4,21 @@ require_once 'config.php';
 
 requireAdmin();
 
+// Contrast helper for text over colors
+if (!function_exists('getContrastColor')) {
+function getContrastColor($hexColor) {
+    if (!$hexColor) return '#ffffff';
+    $hexColor = ltrim($hexColor, '#');
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+    $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+    return $luminance > 0.5 ? '#000000' : '#ffffff';
+}
+}
+
+
+
 // Handle filters and search
 $search = $_GET['search'] ?? '';
 $brand_filter = $_GET['brand'] ?? '';
@@ -390,11 +405,10 @@ $user = getCurrentUser();
         }
         
         .team-logo {
-            width: 60px;
-            height: 60px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
             border-radius: 0.25rem;
-            background: rgba(255,255,255,0.1);
             padding: 4px;
         }
         
@@ -509,7 +523,12 @@ $user = getCurrentUser();
             font-size: 0.8rem;
             opacity: 0.7;
         }
-    </style>
+    
+        .split-header { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: transparent; }
+        .split-left, .split-right { display: flex; align-items: center; justify-content: center; background: transparent; min-height: 140px; }
+        .split-left img.team-logo { max-width: 100px; max-height: 100px; }
+        </style>
+        
 </head>
 <body data-view="<?php echo $view_mode; ?>">
     <?php include 'includes/admin_header.php'; ?>
@@ -619,15 +638,15 @@ $user = getCurrentUser();
             <?php foreach ($kits as $kit): ?>
                 <div class="kit-card" onclick="window.location.href='kit_view.php?id=<?php echo $kit['kit_id']; ?>'" style="cursor: pointer;">
                     <div class="kit-preview">
-                        <?php if ($kit['FMID']): ?>
-                            <img src="logo/<?php echo $kit['FMID']; ?>.png" 
-                                 alt="<?php echo htmlspecialchars($kit['team_name']); ?>" 
-                                 class="team-logo"
-                                 onerror="this.style.display='none'">
-                        <?php endif; ?>
-                        
-                        <!-- Inline SVG preview like kit_add.php -->
-                        <div class="svg-preview">
+    <div class="split-header">
+      <div class="split-left">
+        <?php if ($kit['FMID']): ?>
+          <img src="logo/<?php echo $kit['FMID']; ?>.png" alt="<?php echo htmlspecialchars($kit['team_name']); ?>" class="team-logo" onerror="this.style.display='none'">
+        <?php endif; ?>
+      </div>
+      <div class="split-right">
+        <?php $nameTextColor = getContrastColor($kit['color1_hex'] ?? '#000000'); $numberTextColor = getContrastColor($kit['color2_hex'] ?? '#000000'); ?>
+<div class="svg-preview">
                             <svg width="120" height="120" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 120px; max-height: 120px;">
                                 <!-- Jersey borders/outline -->
                                 <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
@@ -678,15 +697,26 @@ $user = getCurrentUser();
                                     fill="<?php echo $kit['color1_hex'] ?? '#ffffff'; ?>" fill-opacity="0.9"/>
                                 </g>
                                 
-                                <?php if ($kit['number']): ?>
+                                <?php if ($kit['player_name']): ?>
+    <!-- Player name -->
+    <text x="2133" y="1900" text-anchor="middle"
+          font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold"
+          font-size="600" fill="<?php echo $nameTextColor; ?>">
+        <?php echo strtoupper(htmlspecialchars($kit['player_name'])); ?>
+    </text>
+<?php endif; ?>
+<?php if ($kit['number']): ?>
                                     <!-- Jersey number -->
-                                    <text x="2133" y="2700" font-family="Arial, sans-serif" font-size="800" font-weight="bold" 
-                                          text-anchor="middle" fill="<?php echo $kit['color3_hex'] ?? '#000000'; ?>">
+                                    <text x="2133" y="3000" font-family="Barlow Condensed, sans-serif" font-size="900" font-weight="bold" 
+                                          text-anchor="middle" fill="<?php echo $numberTextColor; ?>">
                                         <?php echo htmlspecialchars($kit['number']); ?>
                                     </text>
                                 <?php endif; ?>
                             </svg>
-                        </div>
+                        
+        </div>
+      </div>
+    </div>
                     </div>
                     
                     <div class="kit-info">
@@ -757,19 +787,19 @@ $user = getCurrentUser();
             <div></div> <!-- Jersey preview column -->
             <div></div> <!-- Spacer for layout -->
             <button class="sort-btn" onclick="toggleSort('team')">
-                Team <?php if ($sort_by === 'team'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+                Team <?php if ($sort_by === 'team'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '?' : '?'; ?></span><?php endif; ?>
             </button>
             <button class="sort-btn" onclick="toggleSort('season')">
-                Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+                Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '?' : '?'; ?></span><?php endif; ?>
             </button>
             <button class="sort-btn" onclick="toggleSort('brand')">
-                Brand <?php if ($sort_by === 'brand'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+                Brand <?php if ($sort_by === 'brand'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '?' : '?'; ?></span><?php endif; ?>
             </button>
             <button class="sort-btn" onclick="toggleSort('size')">
-                Size <?php if ($sort_by === 'size'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+                Size <?php if ($sort_by === 'size'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '?' : '?'; ?></span><?php endif; ?>
             </button>
             <button class="sort-btn" onclick="toggleSort('condition')">
-                Condition <?php if ($sort_by === 'condition'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+                Condition <?php if ($sort_by === 'condition'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '?' : '?'; ?></span><?php endif; ?>
             </button>
             <div></div> <!-- Actions column -->
         </div>
@@ -876,7 +906,7 @@ $user = getCurrentUser();
                         <div class="list-detail">
                             <?php if ($kit['condition_name']): ?>
                                 <?php echo htmlspecialchars($kit['condition_name']); ?>
-                                <?php for ($i = 0; $i < $kit['condition_stars']; $i++): ?>⭐<?php endfor; ?>
+                                <?php for ($i = 0; $i < $kit['condition_stars']; $i++): ?>?<?php endfor; ?>
                             <?php else: ?>
                                 N/A
                             <?php endif; ?>
