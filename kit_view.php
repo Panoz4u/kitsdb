@@ -73,40 +73,41 @@ $user = getCurrentUser();
     <title><?php echo htmlspecialchars($kit['team_name']); ?> Jersey - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        .back-navigation {
-            margin-bottom: var(--space-lg);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .back-btn {
+        .back-icon {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--surface);
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
             color: var(--primary-text);
             text-decoration: none;
-            border-radius: 0.375rem;
+            border-radius: 50%;
             border: 1px solid var(--border-color);
             transition: all 0.2s ease;
-            font-size: 0.9rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 10;
         }
         
-        .back-btn:hover {
+        .back-icon:hover {
             background: var(--action-red);
             border-color: var(--action-red);
             color: white;
+            transform: scale(1.1);
         }
         
         .kit-header {
             background: linear-gradient(135deg, var(--surface) 0%, var(--background) 100%);
             border-radius: 1rem;
-            padding: 2rem;
-            margin-bottom: var(--space-xl);
+            padding: 3rem 2rem 2rem 2rem;
+            margin-bottom: calc(var(--space-xl) + 1rem);
             border: 1px solid var(--border-color);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
         
         .header-content {
@@ -146,7 +147,7 @@ $user = getCurrentUser();
         }
         
         .jersey-preview-large {
-            width: 150px;
+            width: 250px;
             height: auto;
             filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
         }
@@ -154,8 +155,8 @@ $user = getCurrentUser();
         .kit-details-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--space-xl);
-            margin-bottom: var(--space-xl);
+            gap: calc(var(--space-xl) + 0.5rem);
+            margin-bottom: calc(var(--space-xl) + 0.5rem);
         }
         
         .details-card {
@@ -230,7 +231,8 @@ $user = getCurrentUser();
             border-radius: 0.75rem;
             padding: 1.5rem;
             border: 1px solid var(--border-color);
-            margin-bottom: var(--space-xl);
+            margin-bottom: calc(var(--space-xl) + 0.5rem);
+            margin-top: calc(var(--space-lg) + 0.5rem);
         }
         
         .notes-text {
@@ -241,6 +243,7 @@ $user = getCurrentUser();
         
         .photo-gallery {
             margin-bottom: var(--space-xl);
+            margin-top: calc(var(--space-lg) + 0.5rem);
         }
         
         .gallery-title {
@@ -279,8 +282,9 @@ $user = getCurrentUser();
         .photo-thumbnail {
             width: 100%;
             height: 200px;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
+            background: var(--background);
         }
         
         .photo-info {
@@ -297,6 +301,15 @@ $user = getCurrentUser();
         .photo-meta {
             color: var(--secondary-text);
             font-size: 0.8rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .photo-filename {
+            color: var(--secondary-text);
+            font-size: 0.75rem;
+            font-family: monospace;
+            margin: 0;
+            opacity: 0.8;
         }
         
         .no-photos {
@@ -485,16 +498,12 @@ $user = getCurrentUser();
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Back Navigation -->
-        <div class="back-navigation">
-            <a href="kits_list.php" class="back-btn">
-                ← Back to List
-            </a>
-        </div>
-
         <!-- Kit Header -->
         <div class="kit-header">
             <div class="header-content">
+                <a href="kits_list.php" class="back-icon">
+                    &lt;
+                </a>
                 <?php if ($kit['FMID']): ?>
                     <img src="logo/<?php echo $kit['FMID']; ?>.png" 
                          alt="<?php echo htmlspecialchars($kit['team_name']); ?>" 
@@ -520,9 +529,76 @@ $user = getCurrentUser();
                 </div>
                 
                 <div>
-                    <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
-                         alt="Jersey preview" 
-                         class="jersey-preview-large">
+                    <div style="position: relative;">
+                        <svg width="250" height="250" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 250px; max-height: 250px; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));">
+                            <!-- Jersey borders/outline (secondary color) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyBorder">
+                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="<?php echo $kit['color2_hex'] ?: '#4B5563'; ?>"/>
+                            </g>
+                            
+                            <!-- Jersey inner area (primary color) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyInner">
+                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="<?php echo $kit['color1_hex'] ?: '#ffffff'; ?>" fill-opacity="0.9"/>
+                            </g>
+                            
+                            <!-- V-neck cutout (transparent) -->
+                            <path d="M 2000 800 L 2133 1200 L 2267 800 C 2240 850 2180 900 2133 900 C 2086 900 2026 850 2000 800 Z" 
+                                  fill="none" stroke="none"/>
+                            
+                            <!-- Player name text -->
+                            <text x="2133" y="1900" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="600" fill="<?php echo $kit['color3_hex'] ?: '#000000'; ?>">
+                                <?php echo htmlspecialchars($kit['player_name'] ?: ''); ?>
+                            </text>
+                            
+                            <!-- Number text -->
+                            <text x="2133" y="3100" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="1000" fill="<?php echo $kit['color3_hex'] ?: '#000000'; ?>">
+                                <?php echo $kit['number'] ?: ''; ?>
+                            </text>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -664,10 +740,13 @@ $user = getCurrentUser();
                              class="photo-thumbnail"
                              loading="lazy">
                         <div class="photo-info">
-                            <h4 class="photo-title"><?php echo htmlspecialchars($photo['title'] ?: $photo['filename']); ?></h4>
+                            <h4 class="photo-title"><?php echo htmlspecialchars($photo['title'] ?: 'No title'); ?></h4>
                             <p class="photo-meta">
                                 <?php echo htmlspecialchars($photo['classification_name'] ?? 'N/A'); ?>
                                 • <?php echo date('d/m/Y', strtotime($photo['uploaded_at'])); ?>
+                            </p>
+                            <p class="photo-filename">
+                                <?php echo htmlspecialchars($photo['filename']); ?>
                             </p>
                         </div>
                     </div>
