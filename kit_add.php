@@ -152,6 +152,18 @@ $user = getCurrentUser();
             margin-top: var(--space-md);
         }
         
+        /* Fix dropdown option styling */
+        select option {
+            background: var(--surface);
+            color: var(--primary-text);
+        }
+        
+        .file-name-input {
+            background: var(--surface);
+            color: var(--primary-text);
+            border: 1px solid var(--border-color);
+        }
+        
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -371,40 +383,18 @@ $user = getCurrentUser();
                             <!-- V-neck cutout (transparent) -->
                             <path d="M 2000 800 L 2133 1200 L 2267 800 C 2240 850 2180 900 2133 900 C 2086 900 2026 850 2000 800 Z" 
                                   fill="none" stroke="none"/>
+                            
+                            <!-- Player name text -->
+                            <text id="playerNameText" x="2133" y="1900" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="600" fill="#000000"></text>
+                            
+                            <!-- Number text -->
+                            <text id="numberText" x="2133" y="3100" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="1000" fill="#000000"></text>
                         </svg>
                         
-                        <!-- Number area overlay (secondary color) -->
-                        <div id="numberArea" style="
-                            position: absolute;
-                            width: 80px;
-                            height: 50px;
-                            background: #4B5563;
-                            border-radius: 8px;
-                            left: 60px;
-                            top: 90px;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            opacity: 0.9;
-                        ">
-                            <!-- Player name -->
-                            <div id="playerName" style="
-                                font-family: Arial, sans-serif;
-                                font-size: 8px;
-                                font-weight: bold;
-                                color: #ffffff;
-                                margin-bottom: 2px;
-                            "></div>
-                            
-                            <!-- Number -->
-                            <div id="shirtNumber" style="
-                                font-family: Arial, sans-serif;
-                                font-size: 20px;
-                                font-weight: bold;
-                                color: #ffffff;
-                            "></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -756,11 +746,6 @@ $user = getCurrentUser();
                        name="photo_titles[]" 
                        placeholder="Photo name..." 
                        class="file-name-input">
-                <select name="photo_types[]" class="file-name-input">
-                    <option value="front">Front</option>
-                    <option value="back">Back</option>
-                    <option value="extra">Extra</option>
-                </select>
                 <select name="photo_classifications[]" class="file-name-input">
                     <option value="1">Match</option>
                     <option value="2">Web</option>
@@ -805,14 +790,10 @@ $user = getCurrentUser();
             const number = numberInput.value || '';
             let playerName = playerInput.value.toUpperCase();
             
-            // Truncate player name if longer than 7 characters
-            if (playerName.length > 7) {
-                playerName = playerName.substring(0, 7) + '.';
+            // Truncate player name if longer than 9 characters
+            if (playerName.length > 9) {
+                playerName = playerName.substring(0, 9) + '.';
             }
-            
-            // Update number and player name
-            document.getElementById('shirtNumber').textContent = number;
-            document.getElementById('playerName').textContent = playerName;
             
             // Get selected colors using hex from database
             const color1 = getSelectedColorHex(color1Select) || '#ffffff'; // Primary (inner jersey)
@@ -829,13 +810,23 @@ $user = getCurrentUser();
                 jerseyBorder.querySelector('path').setAttribute('fill', color2);
             }
             
-            // Update number area
-            document.getElementById('numberArea').style.background = color2;
+            // Update player name text
+            const playerNameText = document.getElementById('playerNameText');
+            if (playerNameText) {
+                playerNameText.textContent = playerName;
+                // Set text color based on primary jersey color contrast (since it's in the primary color area)
+                const nameTextColor = getContrastColor(color1);
+                playerNameText.setAttribute('fill', nameTextColor);
+            }
             
-            // Calculate text color for number and name
-            const textColor = getContrastColor(color2);
-            document.getElementById('shirtNumber').style.color = textColor;
-            document.getElementById('playerName').style.color = textColor;
+            // Update number text
+            const numberText = document.getElementById('numberText');
+            if (numberText) {
+                numberText.textContent = number;
+                // Set text color based on secondary jersey color contrast (for the bottom area)
+                const numberTextColor = getContrastColor(color2);
+                numberText.setAttribute('fill', numberTextColor);
+            }
         }
         
         function getSelectedColorHex(selectElement) {
