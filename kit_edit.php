@@ -234,13 +234,61 @@ $user = getCurrentUser();
         .existing-photo-item.marked-for-deletion {
             opacity: 0.5;
             border-color: var(--action-red);
+            transform: scale(0.9);
+            transition: all 0.3s ease;
         }
         
-        .delete-photo-checkbox {
+        .delete-photo-btn {
             position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            transform: scale(1.2);
+            top: -25px;
+            right: -25px;
+            background: var(--action-red);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        .delete-photo-btn:hover {
+            background: #c13544;
+            transform: scale(1.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: var(--surface);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
         
         .photo-upload-section {
@@ -300,9 +348,9 @@ $user = getCurrentUser();
         <?php if ($kit): ?>
         <form method="POST" enctype="multipart/form-data" id="kitForm">
             <div class="form-grid">
-                <!-- Squadra con autocomplete -->
+                <!-- Team with autocomplete -->
                 <div class="form-group">
-                    <label for="team_search">Squadra *</label>
+                    <label for="team_search">Team *</label>
                     <div class="autocomplete-container">
                         <input type="text" id="team_search" placeholder="Search team..." required 
                                value="<?php echo htmlspecialchars($kit['team_name']); ?>">
@@ -319,28 +367,28 @@ $user = getCurrentUser();
                     </select>
                 </div>
 
-                <!-- Numero e Giocatore -->
+                <!-- Number and Player -->
                 <div class="form-group">
                     <div class="inline-group">
                         <div class="form-group small">
-                            <label for="number">Numero</label>
+                            <label for="number">Number</label>
                             <input type="number" id="number" name="number" min="0" max="99"
                                    value="<?php echo $kit['number'] ?? ''; ?>">
                         </div>
                         <div class="form-group">
-                            <label for="player_name">Nome Giocatore</label>
-                            <input type="text" id="player_name" name="player_name" placeholder="Nome del giocatore"
+                            <label for="player_name">Player Name</label>
+                            <input type="text" id="player_name" name="player_name" placeholder="Player name"
                                    value="<?php echo htmlspecialchars($kit['player_name'] ?? ''); ?>">
                         </div>
                     </div>
                 </div>
 
-                <!-- Maniche -->
+                <!-- Sleeves -->
                 <div class="form-group">
-                    <label>Maniche</label>
+                    <label>Sleeves</label>
                     <div class="size-selector">
-                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Short' ? 'active' : ''; ?>" data-value="Short">Corte</button>
-                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Long' ? 'active' : ''; ?>" data-value="Long">Lunghe</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Short' ? 'active' : ''; ?>" data-value="Short">Short</button>
+                        <button type="button" class="size-btn <?php echo $kit['sleeves'] === 'Long' ? 'active' : ''; ?>" data-value="Long">Long</button>
                     </div>
                     <input type="hidden" name="sleeves" id="sleeves" value="<?php echo $kit['sleeves']; ?>">
                 </div>
@@ -349,15 +397,15 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="brand_id">Brand</label>
                     <select name="brand_id" id="brand_id">
-                        <option value="">Seleziona brand...</option>
+                        <option value="">Select brand...</option>
                     </select>
                 </div>
 
-                <!-- Categoria -->
+                <!-- Category -->
                 <div class="form-group">
-                    <label for="category_id">Categoria</label>
+                    <label for="category_id">Category</label>
                     <select name="category_id" id="category_id">
-                        <option value="">Seleziona categoria...</option>
+                        <option value="">Select category...</option>
                     </select>
                 </div>
 
@@ -365,7 +413,7 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="jersey_type_id">Jersey Type</label>
                     <select name="jersey_type_id" id="jersey_type_id">
-                        <option value="">Seleziona tipo...</option>
+                        <option value="">Select type...</option>
                     </select>
                 </div>
 
@@ -373,45 +421,128 @@ $user = getCurrentUser();
                 <div class="form-group">
                     <label for="condition_id">Condition</label>
                     <select name="condition_id" id="condition_id">
-                        <option value="">Seleziona condizione...</option>
+                        <option value="">Select condition...</option>
                     </select>
                 </div>
 
-                <!-- Taglie -->
+                <!-- Sizes -->
                 <div class="form-group full-width">
                     <label>Size</label>
                     <div class="size-selector" id="size-selector">
-                        <!-- Caricate via JS -->
+                        <!-- Loaded via JS -->
                     </div>
                     <input type="hidden" name="size_id" id="size_id" value="<?php echo $kit['size_id']; ?>">
                 </div>
 
-                <!-- Colori -->
+                <!-- Colors -->
                 <div class="form-group">
-                    <label for="color1_id">Colore Primario</label>
-                    <select name="color1_id" id="color1_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color1_id">Primary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color1_id" id="color1_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color1_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #333;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color2_id">Colore Secondario</label>
-                    <select name="color2_id" id="color2_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color2_id">Secondary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color2_id" id="color2_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color2_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: #fff;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="color3_id">Colore Terziario</label>
-                    <select name="color3_id" id="color3_id">
-                        <option value="">Seleziona colore...</option>
-                    </select>
+                    <label for="color3_id">Tertiary Color</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <select name="color3_id" id="color3_id" style="flex: 1;">
+                            <option value="">Select color...</option>
+                        </select>
+                        <div class="color-swatch" id="color3_swatch" style="width: 30px; height: 30px; border: 2px solid var(--border-color); border-radius: 4px; background: transparent;"></div>
+                    </div>
                 </div>
 
-                <!-- Note -->
+                <!-- Notes -->
                 <div class="form-group full-width">
-                    <label for="notes">Note</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="Note aggiuntive..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Additional notes..."><?php echo htmlspecialchars($kit['notes'] ?? ''); ?></textarea>
+                </div>
+            </div>
+
+            <!-- Preview Jersey Live -->
+            <div class="svg-preview-container">
+                <h3>Jersey Preview</h3>
+                <div id="live-preview" style="display: flex; justify-content: center;">
+                    <div style="position: relative;">
+                        <svg width="200" height="200" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 200px; max-height: 200px;">
+                            <!-- Jersey borders/outline (secondary color - originally gray #4B5563) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyBorder">
+                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#4B5563"/>
+                            </g>
+                            
+                            <!-- Jersey inner area (primary color - originally transparent) -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)" id="jerseyInner">
+                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="#ffffff" fill-opacity="0.9"/>
+                            </g>
+                            
+                            <!-- V-neck cutout (transparent) -->
+                            <path d="M 2000 800 L 2133 1200 L 2267 800 C 2240 850 2180 900 2133 900 C 2086 900 2026 850 2000 800 Z" 
+                                  fill="none" stroke="none"/>
+                            
+                            <!-- Player name text -->
+                            <text id="playerNameText" x="2133" y="1900" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="600" fill="#000000"></text>
+                            
+                            <!-- Number text -->
+                            <text id="numberText" x="2133" y="3100" text-anchor="middle" 
+                                  font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold" 
+                                  font-size="1000" fill="#000000"></text>
+                        </svg>
+                        
+                    </div>
                 </div>
             </div>
 
@@ -421,37 +552,40 @@ $user = getCurrentUser();
                 <h3>Existing Photos</h3>
                 <div class="existing-photos">
                     <?php foreach ($existing_photos as $photo): ?>
-                    <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>">
-                        <input type="checkbox" name="delete_photos[]" value="<?php echo $photo['photo_id']; ?>" 
-                               class="delete-photo-checkbox" onchange="togglePhotoDelete(<?php echo $photo['photo_id']; ?>)">
-                        
-                        <?php
-                        $photoPath = null;
-                        $possiblePaths = [
-                            'uploads/front/' . $photo['filename'],
-                            'uploads/back/' . $photo['filename'], 
-                            'uploads/extra/' . $photo['filename']
-                        ];
-                        foreach ($possiblePaths as $path) {
-                            if (file_exists(__DIR__ . '/' . $path)) {
-                                $photoPath = $path;
-                                break;
+                    <div class="existing-photo-item" id="photo-<?php echo $photo['photo_id']; ?>" data-photo-id="<?php echo $photo['photo_id']; ?>">
+                        <div style="position: relative;">
+                            <button type="button" class="delete-photo-btn" onclick="deleteExistingPhoto(<?php echo $photo['photo_id']; ?>)">
+                                ✕
+                            </button>
+                            
+                            <?php
+                            $photoPath = null;
+                            $possiblePaths = [
+                                'uploads/front/' . $photo['filename'],
+                                'uploads/back/' . $photo['filename'], 
+                                'uploads/extra/' . $photo['filename']
+                            ];
+                            foreach ($possiblePaths as $path) {
+                                if (file_exists(__DIR__ . '/' . $path)) {
+                                    $photoPath = $path;
+                                    break;
+                                }
                             }
-                        }
-                        ?>
-                        
-                        <?php if ($photoPath): ?>
-                            <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Photo'); ?>" class="file-thumbnail">
-                        <?php else: ?>
-                            <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
-                                📷 <br><small>File non trovato</small>
-                            </div>
-                        <?php endif; ?>
+                            ?>
+                            
+                            <?php if ($photoPath): ?>
+                                <img src="<?php echo $photoPath; ?>" alt="<?php echo htmlspecialchars($photo['title'] ?? 'Photo'); ?>" class="file-thumbnail">
+                            <?php else: ?>
+                                <div class="file-thumbnail" style="background: var(--background); display: flex; align-items: center; justify-content: center;">
+                                    📷 <br><small>File not found</small>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                         
                         <div class="file-info">
                             <div><strong><?php echo htmlspecialchars($photo['title'] ?: $photo['filename']); ?></strong></div>
                             <div><small><?php echo htmlspecialchars($photo['classification_name'] ?? 'N/A'); ?></small></div>
-                            <div><small>Caricata: <?php echo date('d/m/Y H:i', strtotime($photo['uploaded_at'])); ?></small></div>
+                            <div><small>Uploaded: <?php echo date('d/m/Y H:i', strtotime($photo['uploaded_at'])); ?></small></div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -465,23 +599,38 @@ $user = getCurrentUser();
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">
-                        Trascina le foto qui o clicca per selezionare<br>
-                        <small>Formati supportati: JPG, PNG, GIF (max 5MB)</small>
+                        Drag photos here or click to select<br>
+                        <small>Supported formats: JPG, PNG, GIF (max 5MB)</small>
                     </div>
                     <input type="file" id="photo-input" name="photos[]" multiple accept="image/*" style="display: none;">
                 </div>
                 
                 <div class="uploaded-photos" id="uploaded-photos">
-                    <!-- Nuovi file caricati mostrati qui -->
+                    <!-- New uploaded files shown here -->
                 </div>
             </div>
 
+            <!-- Hidden input to track deleted photos -->
+            <div id="deleted-photos-container"></div>
+            
             <div style="text-align: center; margin-top: var(--space-lg);">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Save Changes</button>
-                <a href="kits_list.php" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</a>
+                <button type="button" id="cancel-btn" class="btn btn-secondary" style="padding: 1rem 2rem; margin-left: 1rem;">Cancel</button>
             </div>
         </form>
         <?php endif; ?>
+    </div>
+
+    <!-- Modal for unsaved changes -->
+    <div id="unsaved-modal" class="modal">
+        <div class="modal-content">
+            <h3>Attention: You have unsaved changes</h3>
+            <p>Do you want to discard your changes?</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Stay</button>
+                <button type="button" class="btn btn-primary" onclick="discardChanges()">Discard Changes</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -492,21 +641,116 @@ $user = getCurrentUser();
         setupAutocomplete();
         setupFileUpload();
         setupSizeSelectors();
+        setupLivePreview();
+        trackFormChanges();
+        setupCancelButton();
     });
 
-    function togglePhotoDelete(photoId) {
+    // Track changes for modal confirmation
+    let hasUnsavedChanges = false;
+    let deletedPhotos = new Set();
+    
+    function deleteExistingPhoto(photoId) {
+        console.log('Deleting photo:', photoId);
         const photoItem = document.getElementById('photo-' + photoId);
-        const checkbox = photoItem.querySelector('.delete-photo-checkbox');
         
-        if (checkbox.checked) {
+        if (photoItem) {
+            // Mark as deleted with visual effect
             photoItem.classList.add('marked-for-deletion');
+            
+            // Add to deleted photos set
+            deletedPhotos.add(photoId);
+            
+            // Update hidden inputs for form submission
+            updateDeletedPhotosInput();
+            
+            // Mark as having unsaved changes
+            hasUnsavedChanges = true;
+            
+            console.log('Photo marked for deletion successfully');
         } else {
-            photoItem.classList.remove('marked-for-deletion');
+            console.error('Photo item not found for ID:', photoId);
         }
+    }
+    
+    function updateDeletedPhotosInput() {
+        const container = document.getElementById('deleted-photos-container');
+        if (!container) {
+            console.error('Deleted photos container not found');
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        deletedPhotos.forEach(photoId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_photos[]';
+            input.value = photoId;
+            container.appendChild(input);
+        });
+    }
+    
+    function trackFormChanges() {
+        const form = document.getElementById('kitForm');
+        if (!form) return;
+        
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                hasUnsavedChanges = true;
+            });
+            input.addEventListener('change', () => {
+                hasUnsavedChanges = true;
+            });
+        });
+    }
+    
+    function setupCancelButton() {
+        const cancelBtn = document.getElementById('cancel-btn');
+        if (!cancelBtn) return;
+        
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (hasUnsavedChanges || deletedPhotos.size > 0 || selectedFiles.length > 0) {
+                document.getElementById('unsaved-modal').style.display = 'block';
+            } else {
+                window.location.href = 'kits_list.php';
+            }
+        });
+    }
+    
+    function closeModal() {
+        document.getElementById('unsaved-modal').style.display = 'none';
+    }
+    
+    function discardChanges() {
+        // Reset deleted photos - show them again
+        deletedPhotos.forEach(photoId => {
+            const photoItem = document.getElementById('photo-' + photoId);
+            if (photoItem) {
+                photoItem.classList.remove('marked-for-deletion');
+            }
+        });
+        
+        // Clear tracking
+        deletedPhotos.clear();
+        hasUnsavedChanges = false;
+        
+        // Clear hidden inputs
+        const container = document.getElementById('deleted-photos-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        
+        // Navigate away
+        window.location.href = 'kits_list.php';
     }
 
     function loadLookupData() {
-        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons'];
+        const lookupTypes = ['brands', 'categories', 'jersey_types', 'conditions', 'sizes', 'colors', 'seasons', 'photo_classifications'];
         
         lookupTypes.forEach(type => {
             fetch(`api/lookup.php?type=${type}`)
@@ -520,6 +764,8 @@ $user = getCurrentUser();
                         populateJerseyTypes(data);
                     } else if (type === 'colors') {
                         populateColors(data);
+                    } else if (type === 'photo_classifications') {
+                        window.photoClassifications = data;
                     } else {
                         populateSelect(type, data);
                     }
@@ -563,7 +809,18 @@ $user = getCurrentUser();
         const container = document.getElementById('size-selector');
         container.innerHTML = '';
         
-        data.forEach(size => {
+        // Custom order with YTH before XS
+        const customOrder = ['YTH', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        const sortedData = data.sort((a, b) => {
+            const aIndex = customOrder.indexOf(a.name);
+            const bIndex = customOrder.indexOf(b.name);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        sortedData.forEach(size => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'size-btn';
@@ -659,6 +916,27 @@ $user = getCurrentUser();
                 
                 select.appendChild(option);
             });
+            
+            // Add change listener to update color swatch
+            select.addEventListener('change', function() {
+                const swatchId = selectId.replace('_id', '_swatch');
+                const swatch = document.getElementById(swatchId);
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.dataset.hex) {
+                    swatch.style.background = selectedOption.dataset.hex;
+                } else {
+                    swatch.style.background = 'transparent';
+                }
+            });
+            
+            // Set initial swatch color for pre-selected values
+            const initialOption = select.options[select.selectedIndex];
+            if (initialOption && initialOption.dataset.hex) {
+                const swatchId = selectId.replace('_id', '_swatch');
+                const swatch = document.getElementById(swatchId);
+                swatch.style.background = initialOption.dataset.hex;
+            }
         });
     }
 
@@ -816,18 +1094,15 @@ $user = getCurrentUser();
             <div class="file-info">
                 <input type="text" 
                        name="photo_titles[]" 
-                       placeholder="Nome foto..." 
+                       placeholder="Photo name..." 
                        class="file-name-input">
                 <select name="photo_types[]" class="file-name-input">
-                    <option value="front">Fronte</option>
-                    <option value="back">Retro</option>
+                    <option value="front">Front</option>
+                    <option value="back">Back</option>
                     <option value="extra">Extra</option>
                 </select>
                 <select name="photo_classifications[]" class="file-name-input">
-                    <option value="1">Match</option>
-                    <option value="2">Web</option>
-                    <option value="3">Store</option>
-                    <option value="4">Altro</option>
+                    ${generateClassificationOptions()}
                 </select>
             </div>
         `;
@@ -852,6 +1127,92 @@ $user = getCurrentUser();
         
         // Update the preview
         updateFilePreview();
+    }
+
+    function generateClassificationOptions() {
+        if (!window.photoClassifications) {
+            return `
+                <option value="1">Match</option>
+                <option value="2">Web</option>
+                <option value="3">Store</option>
+                <option value="4">Other</option>
+            `;
+        }
+        
+        return window.photoClassifications.map(item => 
+            `<option value="${item.id}">${item.name}</option>`
+        ).join('');
+    }
+
+    function setupLivePreview() {
+        // Form elements that affect preview
+        const numberInput = document.getElementById('number');
+        const playerInput = document.getElementById('player_name');
+        const color1Select = document.getElementById('color1_id');
+        const color2Select = document.getElementById('color2_id');
+        const color3Select = document.getElementById('color3_id');
+        
+        // Function to update preview
+        function updatePreview() {
+            const number = numberInput.value || '';
+            let playerName = playerInput.value.toUpperCase();
+            
+            // Truncate player name if longer than 9 characters
+            if (playerName.length > 9) {
+                playerName = playerName.substring(0, 9) + '.';
+            }
+            
+            // Get selected colors using hex from database
+            const color1 = getSelectedColorHex(color1Select) || '#ffffff'; // Primary (inner jersey)
+            const color2 = getSelectedColorHex(color2Select) || '#4B5563'; // Secondary (borders)
+            
+            // Update jersey colors in SVG
+            const jerseyInner = document.getElementById('jerseyInner');
+            const jerseyBorder = document.getElementById('jerseyBorder');
+            
+            if (jerseyInner) {
+                jerseyInner.querySelector('path').setAttribute('fill', color1);
+            }
+            if (jerseyBorder) {
+                jerseyBorder.querySelector('path').setAttribute('fill', color2);
+            }
+            
+            // Update player name text
+            const playerNameText = document.getElementById('playerNameText');
+            if (playerNameText) {
+                playerNameText.textContent = playerName;
+                // Set text color based on primary jersey color contrast (since it's in the primary color area)
+                const nameTextColor = getContrastColor(color1);
+                playerNameText.setAttribute('fill', nameTextColor);
+            }
+            
+            // Update number text
+            const numberText = document.getElementById('numberText');
+            if (numberText) {
+                numberText.textContent = number;
+                // Set text color based on secondary jersey color contrast (for the bottom area)
+                const numberTextColor = getContrastColor(color2);
+                numberText.setAttribute('fill', numberTextColor);
+            }
+        }
+        
+        function getSelectedColorHex(selectElement) {
+            if (!selectElement.value) return null;
+            
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            return selectedOption.dataset.hex || null;
+        }
+        
+        
+        // Event listeners
+        numberInput.addEventListener('input', updatePreview);
+        playerInput.addEventListener('input', updatePreview);
+        color1Select.addEventListener('change', updatePreview);
+        color2Select.addEventListener('change', updatePreview);
+        color3Select.addEventListener('change', updatePreview);
+        
+        // Initial update after a short delay to ensure data is loaded
+        setTimeout(updatePreview, 1000);
     }
     </script>
 </body>
