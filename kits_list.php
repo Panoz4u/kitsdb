@@ -11,6 +11,8 @@ $category_filter = $_GET['category'] ?? '';
 $type_filter = $_GET['type'] ?? '';
 $condition_filter = $_GET['condition'] ?? '';
 $view_mode = $_GET['view'] ?? 'cards'; // cards or list
+$sort_by = $_GET['sort'] ?? 'created_at';
+$sort_direction = $_GET['dir'] ?? 'desc';
 $page = max(1, intval($_GET['page'] ?? 1));
 $per_page = 24;
 $offset = ($page - 1) * $per_page;
@@ -51,6 +53,19 @@ try {
     }
     
     $where_clause = implode(' AND ', $where_conditions);
+    
+    // Valid sort columns and their mappings
+    $valid_sorts = [
+        'team' => 't.name',
+        'season' => 'k.season',
+        'brand' => 'b.name',
+        'size' => 's.name', 
+        'condition' => 'co.stars',
+        'created_at' => 'k.created_at'
+    ];
+    
+    $order_column = $valid_sorts[$sort_by] ?? 'k.created_at';
+    $order_direction = ($sort_direction === 'asc') ? 'ASC' : 'DESC';
     
     // Query to count total
     $count_sql = "
@@ -94,7 +109,7 @@ try {
         LEFT JOIN colors c2 ON k.color2_id = c2.color_id
         LEFT JOIN colors c3 ON k.color3_id = c3.color_id
         WHERE $where_clause
-        ORDER BY k.created_at DESC
+        ORDER BY $order_column $order_direction
         LIMIT $per_page OFFSET $offset
     ";
     
@@ -298,7 +313,7 @@ $user = getCurrentUser();
         .list-content {
             flex: 1;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+            grid-template-columns: auto 2fr 1fr 1fr 1fr 1fr 1fr auto;
             gap: 1rem;
             align-items: center;
             min-width: 0;
@@ -375,12 +390,39 @@ $user = getCurrentUser();
         }
         
         .team-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 0.25rem;
+            background: rgba(255,255,255,0.1);
+            padding: 4px;
+        }
+        
+        .team-logo-list {
             width: 30px;
             height: 30px;
             object-fit: contain;
             border-radius: 0.25rem;
             background: rgba(255,255,255,0.1);
             padding: 2px;
+            margin-right: 0.75rem;
+        }
+        
+        .kit-preview {
+            height: 200px;
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-direction: row;
+            gap: 1rem;
+        }
+        
+        .svg-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .kit-colors {
@@ -408,6 +450,64 @@ $user = getCurrentUser();
         
         body[data-view="cards"] .kit-list {
             display: none;
+        }
+        
+        /* Ensure card layout and button alignment */
+        .kit-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .kit-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .kit-actions {
+            margin-top: auto;
+        }
+        
+        /* List view sortable header */
+        .list-header {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-text);
+        }
+        
+        body[data-view="list"] .list-header {
+            display: grid;
+            grid-template-columns: auto 40px auto 2fr 1fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .sort-btn {
+            background: none;
+            border: none;
+            color: var(--primary-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+        
+        .sort-btn:hover {
+            color: var(--highlight-yellow);
+        }
+        
+        .sort-indicator {
+            font-size: 0.8rem;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -529,7 +629,7 @@ $user = getCurrentUser();
         <!-- Kit Grid (Cards View) -->
         <div class="kit-grid">
             <?php foreach ($kits as $kit): ?>
-                <div class="kit-card">
+                <div class="kit-card" onclick="window.location.href='kit_view.php?id=<?php echo $kit['kit_id']; ?>'" style="cursor: pointer;">
                     <div class="kit-preview">
                         <?php if ($kit['FMID']): ?>
                             <img src="logo/<?php echo $kit['FMID']; ?>.png" 
@@ -538,12 +638,66 @@ $user = getCurrentUser();
                                  onerror="this.style.display='none'">
                         <?php endif; ?>
                         
-                        <!-- Dynamic SVG preview -->
+                        <!-- Inline SVG preview like kit_add.php -->
                         <div class="svg-preview">
-                            <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
-                                 alt="Jersey preview" 
-                                 style="max-width: 80px; height: auto;"
-                                 loading="lazy">
+                            <svg width="120" height="120" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg" style="max-width: 120px; max-height: 120px;">
+                                <!-- Jersey borders/outline -->
+                                <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                    <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                    -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                    -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                    -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                    166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                    1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                    -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                    -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                    -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                    -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                    349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                    m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                    70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                    -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                    96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                    -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                    -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                    5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                    -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                    -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                    -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                    -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                    143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                    6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                    35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                    fill="<?php echo $kit['color2_hex'] ?? '#4B5563'; ?>"/>
+                                </g>
+                                
+                                <!-- Jersey inner area -->
+                                <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                    <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                    70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                    -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                    96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                    -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                    -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                    5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                    -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                    -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                    -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                    -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                    143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                    6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                    35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                    fill="<?php echo $kit['color1_hex'] ?? '#ffffff'; ?>" fill-opacity="0.9"/>
+                                </g>
+                                
+                                <?php if ($kit['number']): ?>
+                                    <!-- Jersey number -->
+                                    <text x="2133" y="2700" font-family="Arial, sans-serif" font-size="800" font-weight="bold" 
+                                          text-anchor="middle" fill="<?php echo $kit['color3_hex'] ?? '#000000'; ?>">
+                                        <?php echo htmlspecialchars($kit['number']); ?>
+                                    </text>
+                                <?php endif; ?>
+                            </svg>
                         </div>
                     </div>
                     
@@ -600,26 +754,113 @@ $user = getCurrentUser();
                     </div>
                     
                     <div class="kit-actions">
-                        <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit">Edit</a>
+                        <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit" onclick="event.stopPropagation();">Edit</a>
                         <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
                            class="action-btn delete"
-                           onclick="return confirm('Are you sure you want to delete this jersey?')">Delete</a>
+                           onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this jersey?');">Delete</a>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
         
+        <!-- List Header (List View Only) -->
+        <div class="list-header">
+            <div></div> <!-- Logo column -->
+            <div></div> <!-- Jersey preview column -->
+            <div></div> <!-- Spacer for layout -->
+            <button class="sort-btn" onclick="toggleSort('team')">
+                Team <?php if ($sort_by === 'team'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            </button>
+            <button class="sort-btn" onclick="toggleSort('season')">
+                Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            </button>
+            <button class="sort-btn" onclick="toggleSort('brand')">
+                Brand <?php if ($sort_by === 'brand'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            </button>
+            <button class="sort-btn" onclick="toggleSort('size')">
+                Size <?php if ($sort_by === 'size'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            </button>
+            <button class="sort-btn" onclick="toggleSort('condition')">
+                Condition <?php if ($sort_by === 'condition'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            </button>
+            <div></div> <!-- Actions column -->
+        </div>
+        
         <!-- Kit List (List View) -->
         <div class="kit-list">
             <?php foreach ($kits as $kit): ?>
-                <div class="kit-list-item">
+                <div class="kit-list-item" onclick="window.location.href='kit_view.php?id=<?php echo $kit['kit_id']; ?>'" style="cursor: pointer;">
                     <div class="list-preview">
-                        <img src="preview/maglia.php?id=<?php echo $kit['kit_id']; ?>" 
-                             alt="Jersey preview" 
-                             loading="lazy">
+                        <svg width="40" height="40" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Jersey borders/outline -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
+                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="<?php echo $kit['color2_hex'] ?? '#4B5563'; ?>"/>
+                            </g>
+                            
+                            <!-- Jersey inner area -->
+                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                fill="<?php echo $kit['color1_hex'] ?? '#ffffff'; ?>" fill-opacity="0.9"/>
+                            </g>
+                            
+                            <?php if ($kit['number']): ?>
+                                <!-- Jersey number -->
+                                <text x="2133" y="2700" font-family="Arial, sans-serif" font-size="600" font-weight="bold" 
+                                      text-anchor="middle" fill="<?php echo $kit['color3_hex'] ?? '#000000'; ?>">
+                                    <?php echo htmlspecialchars($kit['number']); ?>
+                                </text>
+                            <?php endif; ?>
+                        </svg>
                     </div>
                     
                     <div class="list-content">
+                        <div>
+                            <?php if ($kit['FMID']): ?>
+                                <img src="logo/<?php echo $kit['FMID']; ?>.png" 
+                                     alt="<?php echo htmlspecialchars($kit['team_name']); ?>" 
+                                     class="team-logo-list"
+                                     onerror="this.style.display='none'">
+                            <?php endif; ?>
+                        </div>
+                        
                         <div class="list-team">
                             <?php echo htmlspecialchars($kit['team_name'] ?? 'N/A'); ?>
                         </div>
@@ -654,10 +895,10 @@ $user = getCurrentUser();
                         </div>
                         
                         <div class="list-actions">
-                            <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit">Edit</a>
+                            <a href="kit_edit.php?id=<?php echo $kit['kit_id']; ?>" class="action-btn edit" onclick="event.stopPropagation();">Edit</a>
                             <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
                                class="action-btn delete"
-                               onclick="return confirm('Are you sure you want to delete this jersey?')">Delete</a>
+                               onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this jersey?');">Delete</a>
                         </div>
                     </div>
                 </div>
@@ -712,6 +953,27 @@ $user = getCurrentUser();
     function toggleFilters() {
         const panel = document.getElementById('filtersPanel');
         panel.classList.toggle('active');
+    }
+    
+    // Sort functionality
+    function toggleSort(column) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentSort = urlParams.get('sort');
+        const currentDir = urlParams.get('dir') || 'desc';
+        
+        if (currentSort === column) {
+            // Toggle direction
+            urlParams.set('dir', currentDir === 'asc' ? 'desc' : 'asc');
+        } else {
+            // New sort column, start with ascending
+            urlParams.set('sort', column);
+            urlParams.set('dir', 'asc');
+        }
+        
+        // Reset to page 1 when sorting
+        urlParams.set('page', '1');
+        
+        window.location.search = urlParams.toString();
     }
     
     // Reset filters function
