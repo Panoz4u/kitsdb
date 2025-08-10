@@ -74,6 +74,8 @@ try {
     $valid_sorts = [
         'team' => 't.name',
         'season' => 'k.season',
+        'type' => 'jt.name',
+        'category' => 'c.name',
         'brand' => 'b.name',
         'size' => 's.name', 
         'condition' => 'co.stars',
@@ -541,6 +543,7 @@ $user = getCurrentUser();
             grid-template-columns: 40px 40px 2fr 1fr 1fr 1fr 100px 150px auto;
             gap: 0.75rem;
             align-items: center;
+            
         }
         
         /* Mobile responsive styles */
@@ -548,6 +551,7 @@ $user = getCurrentUser();
             body[data-view="list"] .list-header {
                 grid-template-columns: 40px 2fr 1fr;
                 gap: 0.5rem;
+                margin-left: calc(40px + 1rem);
             }
             .list-header .hide-mobile {
                 display: none;
@@ -558,6 +562,7 @@ $user = getCurrentUser();
             body[data-view="list"] .list-header {
                 grid-template-columns: 40px 40px 2fr 1fr 1fr 100px auto;
                 gap: 0.5rem;
+                margin-left: calc(40px + 1rem);
             }
             .list-header .hide-tablet {
                 display: none;
@@ -584,7 +589,7 @@ $user = getCurrentUser();
         @media (max-width: 768px) {
             .sort-btn {
                 font-size: 0.875rem;
-                justify-content: center;
+                justify-content: flex-start;
             }
         }
         
@@ -864,8 +869,12 @@ $user = getCurrentUser();
             <button class="sort-btn" onclick="toggleSort('season')" style="text-align: left; justify-content: flex-start;">
                 Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
             </button>
-            <div class="hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">Type</div>
-            <div class="hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">Cat.</div>
+            <button class="sort-btn hide-mobile hide-tablet" onclick="toggleSort('type')" style="text-align: left; justify-content: flex-start;">
+                Type <?php if ($sort_by === 'type'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
+            </button>
+            <button class="sort-btn hide-mobile hide-tablet" onclick="toggleSort('category')" style="text-align: left; justify-content: flex-start;">
+                Cat. <?php if ($sort_by === 'category'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
+            </button>
             <div class="hide-mobile" style="font-size: 0.875rem; text-align: left;">Colors</div>
             <div class="hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">Player</div>
             <div class="hide-mobile" style="font-size: 0.875rem; text-align: left;">Actions</div>
@@ -949,11 +958,11 @@ $user = getCurrentUser();
                             <?php echo htmlspecialchars($kit['season']); ?>
                         </div>
                         
-                        <div class="list-detail hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: center;">
+                        <div class="list-detail hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">
                             <?php echo htmlspecialchars($kit['jersey_type_name'] ?? 'N/A'); ?>
                         </div>
                         
-                        <div class="list-detail hide-mobile hide-tablet">
+                        <div class="list-detail hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">
                             <?php echo htmlspecialchars($kit['category_name'] ?? 'N/A'); ?>
                         </div>
                         
