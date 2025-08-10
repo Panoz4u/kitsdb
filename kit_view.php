@@ -516,6 +516,8 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
             max-width: 200px;
             width: 100%;
             height: auto;
+            display: block;
+            margin: 0 auto;
         }
         
         .qr-code:hover {
