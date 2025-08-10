@@ -154,27 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kit) {
             }
         }
         
-        $success = "Jersey updated successfully!";
-        
-        // Ricarica i dati aggiornati
-        $stmt = $db->prepare("
-            SELECT k.*, t.name as team_name, t.FMID 
-            FROM kits k 
-            LEFT JOIN teams t ON k.team_id = t.team_id 
-            WHERE k.kit_id = ?
-        ");
-        $stmt->execute([$kit_id]);
-        $kit = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Ricarica foto
-        $photoStmt = $db->prepare("
-            SELECT p.*, pc.name as classification_name 
-            FROM photos p 
-            LEFT JOIN photo_classifications pc ON p.classification_id = pc.classification_id 
-            WHERE p.kit_id = ?
-        ");
-        $photoStmt->execute([$kit_id]);
-        $existing_photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
+        // Redirect back to kits list after successful save
+        header('Location: kits_list.php');
+        exit();
         
     } catch (Exception $e) {
         $error = $e->getMessage();
