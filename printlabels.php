@@ -25,10 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db = getDb();
             
             // Build the query
-            $sql = "SELECT k.kit_id, t.name as team_name, n.name as nation_name, n.fifa_code, k.season, k.created_at
+            $sql = "SELECT k.kit_id, t.name as team_name, n.name as nation_name, n.fifa_code, k.season, k.created_at, jt.name as jersey_type_name
                     FROM kits k 
                     JOIN teams t ON k.team_id = t.team_id 
                     JOIN nations n ON t.nation_id = n.nation_id 
+                    LEFT JOIN jersey_types jt ON k.jersey_type_id = jt.jersey_type_id
                     WHERE 1=1";
             
             $params = [];
@@ -92,7 +93,7 @@ $user = getCurrentUser();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stampa etichette - KITSDB</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         .filters-section {
             background: var(--surface);
@@ -257,8 +258,8 @@ $user = getCurrentUser();
         }
         
         .qr-code {
-            width: 25mm;
-            height: 25mm;
+            width: 18mm;
+            height: 18mm;
             margin-right: 3mm;
             flex-shrink: 0;
         }
@@ -270,20 +271,34 @@ $user = getCurrentUser();
             justify-content: center;
             font-family: Arial, sans-serif;
             line-height: 1.2;
+            margin-right: 15mm; /* 15mm spazio bianco a destra */
         }
         
         .team-name {
             font-family: 'Barlow Condensed', Arial, sans-serif;
             font-weight: bold;
-            font-size: 33px;
-            margin-bottom: 1mm;
+            font-size: 16px; /* Metà di 33px */
+            margin-bottom: 5px; /* 4-6px di spazio per evitare taglio lettere */
             word-wrap: break-word;
             overflow: hidden;
-            text-overflow: ellipsis;
             line-height: 0.9;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        
+        .jersey-type {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: bold;
+            font-size: 9px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1mm;
         }
         
         .nation-season {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: bold;
             font-size: 9px;
             color: #666;
             overflow: hidden;
@@ -381,7 +396,13 @@ $user = getCurrentUser();
                         for ($i = 0; $i < $labels_per_page; $i++):
                             if (isset($page_labels[$i])):
                                 $label = $page_labels[$i];
-                                $qr_image_url = generateKitQRCode($label['kit_id'], getBaseURL(), 100);
+                                $qr_image_url = generateKitQRCode($label['kit_id'], getBaseURL(), 80); // QR più piccolo
+                                
+                                // Tronca il nome della squadra se troppo lungo
+                                $team_name = $label['team_name'];
+                                if (strlen($team_name) > 25) { // Limite caratteri approssimativo
+                                    $team_name = substr($team_name, 0, 24) . '.';
+                                }
                                 
                                 // Format display: FIFA code and season
                                 $fifa_season = '';
@@ -404,7 +425,8 @@ $user = getCurrentUser();
                                     <img src="<?php echo htmlspecialchars($qr_image_url); ?>" alt="QR" style="width: 100%; height: 100%; object-fit: contain;">
                                 </div>
                                 <div class="label-content">
-                                    <div class="team-name"><?php echo htmlspecialchars($label['team_name']); ?></div>
+                                    <div class="team-name"><?php echo htmlspecialchars($team_name); ?></div>
+                                    <div class="jersey-type"><?php echo htmlspecialchars($label['jersey_type_name'] ?? 'N/A'); ?></div>
                                     <div class="nation-season"><?php echo htmlspecialchars($fifa_season); ?></div>
                                 </div>
                             </div>
