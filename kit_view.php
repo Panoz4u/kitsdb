@@ -1,6 +1,7 @@
 <?php
 require_once 'auth.php';
 require_once 'config.php';
+require_once 'qr_helper.php';
 
 requireAuth();
 
@@ -490,6 +491,79 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
             transform: translateY(-2px);
         }
         
+        /* QR Code Styles */
+        .qr-code-section {
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qr-code-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .qr-code {
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease;
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+        }
+        
+        .qr-code:hover {
+            transform: scale(1.05);
+        }
+        
+        .qr-info {
+            text-align: center;
+        }
+        
+        .qr-info small {
+            color: var(--secondary-text);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--action-red);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .qr-download:hover {
+            background: var(--action-red);
+            color: white;
+            border-color: var(--action-red);
+        }
+        
+        .qr-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-text);
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -512,6 +586,10 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
             
             .modal-nav {
                 display: none;
+            }
+            
+            .qr-code {
+                max-width: 150px;
             }
         }
     </style>
@@ -787,6 +865,15 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
                 <p>No photos available for this jersey.</p>
             </div>
             <?php endif; ?>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="qr-code-section">
+            <h3 class="qr-title">📱 QR Code</h3>
+            <?php echo renderKitQRCode($kit_id); ?>
+            <div style="margin-top: 0.75rem; color: var(--secondary-text); font-size: 0.875rem;">
+                Share this kit by scanning the QR code above
+            </div>
         </div>
 
         <!-- Action Buttons -->

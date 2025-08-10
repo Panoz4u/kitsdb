@@ -1,6 +1,7 @@
 <?php
 require_once 'auth.php';
 require_once 'config.php';
+require_once 'qr_helper.php';
 
 requireAdmin();
 
@@ -540,7 +541,7 @@ $user = getCurrentUser();
         
         body[data-view="list"] .list-header {
             display: grid;
-            grid-template-columns: 40px 40px 2fr 1fr 1fr 1fr 100px 150px auto;
+            grid-template-columns: 40px 40px 240px 116px 120px 118px 100px 156px auto;
             gap: 0.75rem;
             align-items: center;
             
@@ -551,7 +552,7 @@ $user = getCurrentUser();
             body[data-view="list"] .list-header {
                 grid-template-columns: 40px 2fr 1fr;
                 gap: 0.5rem;
-                margin-left: calc(40px + 1rem);
+                
             }
             .list-header .hide-mobile {
                 display: none;
@@ -562,7 +563,7 @@ $user = getCurrentUser();
             body[data-view="list"] .list-header {
                 grid-template-columns: 40px 40px 2fr 1fr 1fr 100px auto;
                 gap: 0.5rem;
-                margin-left: calc(40px + 1rem);
+                
             }
             .list-header .hide-tablet {
                 display: none;
@@ -605,6 +606,135 @@ $user = getCurrentUser();
         .split-header { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: transparent; }
         .split-left, .split-right { display: flex; align-items: center; justify-content: center; background: transparent; min-height: 140px; }
         .split-left img.team-logo { max-width: 100px; max-height: 100px; }
+        
+        /* QR Code styles for kit listing */
+        .qr-mini {
+            width: 24px;
+            height: 24px;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .qr-mini:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .qr-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .qr-tooltip::after {
+            content: "Click for QR code";
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--background);
+            color: var(--primary-text);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+        
+        .qr-tooltip:hover::after {
+            opacity: 1;
+        }
+        
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .qr-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .qr-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: var(--secondary-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .qr-modal-close:hover {
+            background: var(--action-red);
+            color: white;
+        }
+        
+        .qr-modal-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-text);
+            margin: 0 0 1rem 0;
+        }
+        
+        .qr-modal img {
+            max-width: 250px;
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .qr-modal-info {
+            margin-top: 1rem;
+            color: var(--secondary-text);
+            font-size: 0.875rem;
+        }
+        
+        .qr-modal-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--action-red);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+        
+        .qr-modal-download:hover {
+            background: #c23842;
+            transform: translateY(-2px);
+        }
         </style>
         
 </head>
@@ -854,6 +984,12 @@ $user = getCurrentUser();
                         <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
                            class="action-btn delete"
                            onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this jersey?');">Delete</a>
+                        <span class="qr-tooltip">
+                            <img src="<?php echo generateKitQRCode($kit['kit_id'], null, 100); ?>" 
+                                 class="qr-mini" 
+                                 onclick="event.stopPropagation(); openQRModal(<?php echo $kit['kit_id']; ?>, '<?php echo htmlspecialchars($kit['team_name']); ?>');"
+                                 alt="QR Code">
+                        </span>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -1006,6 +1142,12 @@ $user = getCurrentUser();
                             <a href="kit_delete.php?id=<?php echo $kit['kit_id']; ?>" 
                                class="action-btn delete"
                                onclick="event.stopPropagation(); return confirm('Are you sure you want to delete this jersey?');" title="Delete">🗑️</a>
+                            <span class="qr-tooltip">
+                                <img src="<?php echo generateKitQRCode($kit['kit_id'], null, 100); ?>" 
+                                     class="qr-mini" 
+                                     onclick="event.stopPropagation(); openQRModal(<?php echo $kit['kit_id']; ?>, '<?php echo htmlspecialchars($kit['team_name']); ?>');"
+                                     alt="QR Code" title="QR Code">
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -1079,12 +1221,69 @@ $user = getCurrentUser();
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="qr-modal">
+        <div class="qr-modal-content">
+            <span class="qr-modal-close" onclick="closeQRModal()">&times;</span>
+            <h3 class="qr-modal-title" id="qrModalTitle">Kit QR Code</h3>
+            <img id="qrModalImage" src="" alt="QR Code">
+            <div class="qr-modal-info">
+                <div>Scan to view kit details</div>
+                <div id="qrModalUrl" style="font-size: 0.75rem; margin-top: 0.25rem; word-break: break-all;"></div>
+            </div>
+            <a id="qrModalDownload" href="" download="" class="qr-modal-download">
+                📥 Download QR Code
+            </a>
+        </div>
+    </div>
+
     <script>
     // Toggle filters panel
     function toggleFilters() {
         const panel = document.getElementById('filtersPanel');
         panel.classList.toggle('active');
     }
+    
+    // QR Modal functions
+    function openQRModal(kitId, teamName) {
+        const modal = document.getElementById('qrModal');
+        const modalTitle = document.getElementById('qrModalTitle');
+        const modalImage = document.getElementById('qrModalImage');
+        const modalUrl = document.getElementById('qrModalUrl');
+        const modalDownload = document.getElementById('qrModalDownload');
+        
+        // Auto-detect base URL
+        const baseUrl = window.location.protocol + '//' + window.location.host;
+        const kitUrl = baseUrl + '/kit_browse_view.php?id=' + kitId;
+        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(kitUrl) + '&format=png';
+        
+        modalTitle.textContent = teamName + ' - QR Code';
+        modalImage.src = qrUrl;
+        modalUrl.textContent = kitUrl;
+        modalDownload.href = qrUrl;
+        modalDownload.download = 'kit_' + kitId + '_qr.png';
+        
+        modal.style.display = 'block';
+    }
+    
+    function closeQRModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('qrModal');
+        if (event.target == modal) {
+            closeQRModal();
+        }
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeQRModal();
+        }
+    });
     
     // Sort functionality
     function toggleSort(column) {
