@@ -24,7 +24,8 @@ $view_mode = $_GET['view'] ?? 'cards'; // cards or list
 $sort_by = $_GET['sort'] ?? 'created_at';
 $sort_direction = $_GET['dir'] ?? 'desc';
 $page = max(1, intval($_GET['page'] ?? 1));
-$per_page = 24;
+$per_page = intval($_GET['per_page'] ?? 15);
+if (!in_array($per_page, [15, 30, 50])) $per_page = 15;
 $offset = ($page - 1) * $per_page;
 
 try {
@@ -68,6 +69,8 @@ try {
     $valid_sorts = [
         'team' => 't.name',
         'season' => 'k.season',
+        'type' => 'jt.name',
+        'category' => 'c.name',
         'brand' => 'b.name',
         'size' => 's.name', 
         'condition' => 'co.stars',
@@ -324,12 +327,12 @@ try {
         .kit-list-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem;
             background: var(--surface);
             border: 1px solid var(--border-color);
             border-radius: 0.375rem;
             transition: all 0.2s ease;
-            cursor: pointer;
+            min-height: 50px;
         }
         
         .kit-list-item:hover {
@@ -353,18 +356,55 @@ try {
         .list-content {
             flex: 1;
             display: grid;
-            grid-template-columns: auto 2fr 1fr 1fr 1fr 1fr 1fr;
-            gap: 1rem;
+            grid-template-columns: 40px 40px 2fr 1fr 1fr 1fr 100px 150px;
+            gap: 0.75rem;
             align-items: center;
             min-width: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .list-content {
+                grid-template-columns: 40px 2fr 1fr;
+                gap: 0.5rem;
+            }
+            .list-content .hide-mobile {
+                display: none;
+            }
+            .list-team {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+            .kit-list-item {
+                min-height: 50px;
+                max-height: 50px;
+                overflow: hidden;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .list-content {
+                grid-template-columns: 40px 40px 2fr 1fr 1fr 100px;
+                gap: 0.5rem;
+            }
+            .list-content .hide-tablet {
+                display: none;
+            }
         }
         
         .list-team {
             font-weight: 600;
             color: var(--primary-text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        }
+        
+        @media (max-width: 768px) {
+            .list-team {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 120px;
+            }
         }
         
         .list-player {
@@ -508,17 +548,42 @@ try {
             background: var(--surface);
             border: 1px solid var(--border-color);
             border-radius: 0.375rem;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem;
             margin-bottom: 0.5rem;
             font-weight: 600;
             color: var(--primary-text);
+            min-height: 50px;
+            box-sizing: border-box;
         }
         
         body[data-view="list"] .list-header {
             display: grid;
-            grid-template-columns: auto 40px auto 2fr 1fr 1fr 1fr 1fr 1fr;
-            gap: 1rem;
+            grid-template-columns: 40px 40px 2fr 1fr 1fr 1fr 100px 150px;
+            gap: 0.75rem;
             align-items: center;
+        }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body[data-view="list"] .list-header {
+                grid-template-columns: 40px 2fr 1fr;
+                gap: 0.5rem;
+                
+            }
+            .list-header .hide-mobile {
+                display: none;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            body[data-view="list"] .list-header {
+                grid-template-columns: 40px 40px 2fr 1fr 1fr 100px;
+                gap: 0.5rem;
+                margin-left: calc(40px + 1rem);
+            }
+            .list-header .hide-tablet {
+                display: none;
+            }
         }
         
         .sort-btn {
@@ -532,6 +597,17 @@ try {
             padding: 0;
             font-weight: 600;
             transition: color 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            justify-content: flex-start;
+        }
+        
+        @media (max-width: 768px) {
+            .sort-btn {
+                font-size: 0.875rem;
+                justify-content: flex-start;
+            }
         }
         
         .sort-btn:hover {
@@ -806,93 +882,86 @@ try {
         
         <!-- List Header (List View Only) -->
         <div class="list-header">
-            <div></div> <!-- Logo column -->
-            <div></div> <!-- Jersey preview column -->
-            <div></div> <!-- Spacer for layout -->
-            <button class="sort-btn" onclick="toggleSort('team')">
-                Team <?php if ($sort_by === 'team'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            <div style="font-size: 0.875rem; text-align: left;">Kit</div>
+            <div class="hide-mobile" style="font-size: 0.875rem; text-align: left;">Logo</div>
+            <button class="sort-btn" onclick="toggleSort('team')" style="text-align: left; justify-content: flex-start;">
+                Team <?php if ($sort_by === 'team'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
             </button>
-            <button class="sort-btn" onclick="toggleSort('season')">
-                Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            <button class="sort-btn" onclick="toggleSort('season')" style="text-align: left; justify-content: flex-start;">
+                Season <?php if ($sort_by === 'season'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
             </button>
-            <button class="sort-btn" onclick="toggleSort('brand')">
-                Brand <?php if ($sort_by === 'brand'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            <button class="sort-btn hide-mobile hide-tablet" onclick="toggleSort('type')" style="text-align: left; justify-content: flex-start;">
+                Type <?php if ($sort_by === 'type'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
             </button>
-            <button class="sort-btn" onclick="toggleSort('size')">
-                Size <?php if ($sort_by === 'size'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
+            <button class="sort-btn hide-mobile hide-tablet" onclick="toggleSort('category')" style="text-align: left; justify-content: flex-start;">
+                Cat. <?php if ($sort_by === 'category'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '↑' : '↓'; ?></span><?php endif; ?>
             </button>
-            <button class="sort-btn" onclick="toggleSort('condition')">
-                Condition <?php if ($sort_by === 'condition'): ?><span class="sort-indicator"><?php echo $sort_direction === 'asc' ? '▲' : '▼'; ?></span><?php endif; ?>
-            </button>
+            <div class="hide-mobile" style="font-size: 0.875rem; text-align: left;">Colors</div>
+            <div class="hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">Player</div>
         </div>
         
         <!-- Kit List (List View) -->
         <div class="kit-list">
             <?php foreach ($kits as $kit): ?>
-                <div class="kit-list-item" onclick="window.location.href='kit_browse_view.php?id=<?php echo $kit['kit_id']; ?>'">
-                    <div class="list-preview">
-                        <svg width="40" height="40" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Jersey borders/outline -->
-                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
-                                <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
-                                -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
-                                -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
-                                -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
-                                166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
-                                1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
-                                -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
-                                -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
-                                -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
-                                -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
-                                349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z
-                                m1770 -4104 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
-                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
-                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
-                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
-                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
-                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
-                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
-                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
-                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
-                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
-                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
-                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
-                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
-                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
-                                fill="<?php echo $kit['color2_hex'] ?? '#4B5563'; ?>"/>
-                            </g>
-                            
-                            <!-- Jersey inner area -->
-                            <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
-                                <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
-                                70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
-                                -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
-                                96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
-                                -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
-                                -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
-                                5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
-                                -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
-                                -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
-                                -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
-                                -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
-                                143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
-                                6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
-                                35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
-                                fill="<?php echo $kit['color1_hex'] ?? '#ffffff'; ?>" fill-opacity="0.9"/>
-                            </g>
-                            
-                            <?php if ($kit['number']): ?>
-                                <!-- Jersey number -->
-                                <text x="2133" y="2700" font-family="Arial, sans-serif" font-size="600" font-weight="bold" 
-                                      text-anchor="middle" fill="<?php echo $kit['color3_hex'] ?? '#000000'; ?>">
-                                    <?php echo htmlspecialchars($kit['number']); ?>
-                                </text>
-                            <?php endif; ?>
-                        </svg>
-                    </div>
+                <div class="kit-list-item" onclick="window.location.href='kit_browse_view.php?id=<?php echo $kit['kit_id']; ?>'" style="cursor: pointer;">
                     
                     <div class="list-content">
-                        <div>
+                        <div class="list-preview">
+                            <?php $nameTextColor = getContrastColor($kit['color1_hex'] ?? '#000000'); $numberTextColor = getContrastColor($kit['color2_hex'] ?? '#000000'); ?>
+                            <svg width="40" height="40" viewBox="0 0 4267 4267" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Jersey borders/outline -->
+                                <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                    <path d="M14535 37249 c-2088 -1384 -4740 -2804 -7115 -3811 -307 -131 -744
+                                    -306 -1000 -403 -113 -42 -263 -105 -335 -140 -521 -254 -909 -693 -1148
+                                    -1300 -120 -304 -193 -615 -244 -1035 -17 -137 -18 -640 -21 -9455 -2 -6570 0
+                                    -9357 8 -9470 102 -1525 802 -2885 1961 -3811 683 -546 1495 -911 2379 -1070
+                                    166 -30 410 -60 595 -74 195 -14 23245 -14 23440 0 734 54 1388 230 2030 545
+                                    1251 615 2197 1705 2641 3043 141 424 233 899 264 1367 8 113 10 2900 8 9470
+                                    -3 8815 -4 9318 -21 9455 -51 420 -124 731 -244 1035 -239 607 -627 1046
+                                    -1148 1300 -71 35 -222 98 -335 140 -533 201 -1236 496 -1905 800 -2128 966
+                                    -4276 2145 -6158 3378 -98 65 -180 117 -182 117 -2 0 -111 -107 -242 -238
+                                    -965 -964 -1977 -1713 -3023 -2237 -1589 -795 -3180 -1034 -4770 -715 -1736
+                                    349 -3469 1359 -5063 2952 -131 131 -241 238 -245 237 -4 0 -61 -37 -127 -80z" 
+                                    fill="<?php echo $kit['color2_hex'] ?? '#4B5563'; ?>"/>
+                                </g>
+                                <!-- Jersey inner area -->
+                                <g transform="translate(0.000000,4267.000000) scale(0.100000,-0.100000)">
+                                    <path d="M16305 33145 c1137 -701 2438 -1043 4280 -1125 284 -13 1216 -13 1500 0 1574
+                                    70 2747 330 3747 830 260 130 456 243 738 425 98 62 102 64 69 29 -50 -54
+                                    -3532 -3649 -3688 -3808 l-126 -128 155 6 c3842 162 7613 978 10157 2200 l200
+                                    96 204 -111 c787 -428 1720 -927 2157 -1152 285 -147 368 -204 505 -347 246
+                                    -255 401 -590 452 -977 13 -101 15 -1104 15 -8521 0 -8966 2 -8501 -45 -8770
+                                    -228 -1315 -1273 -2357 -2585 -2581 -280 -47 -183 -46 -3195 -46 l-2840 0 -5
+                                    5610 c-5 5099 -7 5617 -22 5685 -64 298 -143 492 -290 710 -254 377 -630 647
+                                    -1061 761 -242 63 146 59 -5292 59 -5438 0 -5050 4 -5292 -59 -634 -168 -1151
+                                    -685 -1315 -1315 -57 -220 -52 275 -58 -5841 l-5 -5610 -2840 0 c-2298 0
+                                    -2863 3 -2960 13 -717 80 -1338 359 -1850 832 -503 464 -855 1109 -970 1777
+                                    -47 277 -45 -207 -45 8775 0 7417 2 8420 15 8521 51 387 206 722 452 977 137
+                                    143 220 200 505 347 437 225 1370 724 2157 1152 l204 111 200 -96 c2547 -1223
+                                    6298 -2035 10162 -2200 l150 -6 -126 128 c-154 158 -3638 3754 -3688 3808 -33
+                                    35 -29 33 69 -29 58 -38 150 -96 205 -130z" 
+                                    fill="<?php echo $kit['color1_hex'] ?? '#ffffff'; ?>" fill-opacity="0.9"/>
+                                </g>
+                                
+                                <?php if ($kit['player_name']): ?>
+                                    <!-- Player name -->
+                                    <text x="2133" y="1900" text-anchor="middle"
+                                          font-family="Barlow Condensed, Arial, sans-serif" font-weight="bold"
+                                          font-size="600" fill="<?php echo $nameTextColor; ?>">
+                                        <?php echo strtoupper(htmlspecialchars($kit['player_name'])); ?>
+                                    </text>
+                                <?php endif; ?>
+                                <?php if ($kit['number']): ?>
+                                    <!-- Jersey number -->
+                                    <text x="2133" y="3000" font-family="Barlow Condensed, sans-serif" font-size="900" font-weight="bold" 
+                                          text-anchor="middle" fill="<?php echo $numberTextColor; ?>">
+                                        <?php echo htmlspecialchars($kit['number']); ?>
+                                    </text>
+                                <?php endif; ?>
+                            </svg>
+                        </div>
+                        
+                        <div class="hide-mobile">
                             <?php if ($kit['FMID']): ?>
                                 <img src="logo/<?php echo $kit['FMID']; ?>.png" 
                                      alt="<?php echo htmlspecialchars($kit['team_name']); ?>" 
@@ -905,32 +974,50 @@ try {
                             <?php echo htmlspecialchars($kit['team_name'] ?? 'N/A'); ?>
                         </div>
                         
-                        <div class="list-player">
-                            <?php if ($kit['player_name']): ?>
-                                <?php echo htmlspecialchars($kit['player_name']); ?> #<?php echo $kit['number']; ?>
-                            <?php else: ?>
-                                #<?php echo $kit['number']; ?>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="list-detail">
+                        <div class="list-detail" style="font-size: 0.875rem; text-align: left;">
                             <?php echo htmlspecialchars($kit['season']); ?>
                         </div>
                         
-                        <div class="list-detail">
-                            <?php echo htmlspecialchars($kit['brand_name'] ?? 'N/A'); ?>
+                        <div class="list-detail hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">
+                            <?php echo htmlspecialchars($kit['jersey_type_name'] ?? 'N/A'); ?>
                         </div>
                         
-                        <div class="list-detail">
-                            <?php echo htmlspecialchars($kit['size_name'] ?? 'N/A'); ?>
+                        <div class="list-detail hide-mobile hide-tablet" style="font-size: 0.875rem; text-align: left;">
+                            <?php echo htmlspecialchars($kit['category_name'] ?? 'N/A'); ?>
                         </div>
                         
-                        <div class="list-detail">
-                            <?php if ($kit['condition_name']): ?>
-                                <?php echo htmlspecialchars($kit['condition_name']); ?>
-                                <?php for ($i = 0; $i < $kit['condition_stars']; $i++): ?>⭐<?php endfor; ?>
-                            <?php else: ?>
-                                N/A
+                        <div class="list-colors hide-mobile">
+                            <?php if ($kit['color1_hex'] || $kit['color2_hex'] || $kit['color3_hex']): ?>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <?php if ($kit['color1_hex']): ?>
+                                        <div class="color-swatch" 
+                                             style="background-color: <?php echo $kit['color1_hex']; ?>; width: 16px; height: 16px;"
+                                             title="<?php echo $kit['color1_name']; ?>"></div>
+                                    <?php endif; ?>
+                                    <?php if ($kit['color2_hex']): ?>
+                                        <div class="color-swatch" 
+                                             style="background-color: <?php echo $kit['color2_hex']; ?>; width: 16px; height: 16px;"
+                                             title="<?php echo $kit['color2_name']; ?>"></div>
+                                    <?php endif; ?>
+                                    <?php if ($kit['color3_hex']): ?>
+                                        <div class="color-swatch" 
+                                             style="background-color: <?php echo $kit['color3_hex']; ?>; width: 16px; height: 16px;"
+                                             title="<?php echo $kit['color3_name']; ?>"></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="list-player hide-mobile hide-tablet">
+                            <?php if ($kit['player_name'] || $kit['number']): ?>
+                                <span style="color: var(--secondary-text); font-size: 0.875rem;">
+                                    <?php if ($kit['player_name']): ?>
+                                        <?php echo htmlspecialchars($kit['player_name']); ?>
+                                        <?php if ($kit['number']): ?> #<?php echo $kit['number']; ?><?php endif; ?>
+                                    <?php elseif ($kit['number']): ?>
+                                        #<?php echo $kit['number']; ?>
+                                    <?php endif; ?>
+                                </span>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -946,39 +1033,63 @@ try {
         <?php endif; ?>
         
         <!-- Pagination -->
-        <?php if ($total_pages > 1): ?>
-            <div class="pagination">
-                <?php if ($page > 1): ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">‹ Previous</a>
-                <?php endif; ?>
-                
-                <?php
-                $start = max(1, $page - 2);
-                $end = min($total_pages, $page + 2);
-                
-                if ($start > 1): ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => 1])); ?>">1</a>
-                    <?php if ($start > 2): ?><span>...</span><?php endif; ?>
-                <?php endif; ?>
-                
-                <?php for ($i = $start; $i <= $end; $i++): ?>
-                    <?php if ($i == $page): ?>
-                        <span class="current"><?php echo $i; ?></span>
-                    <?php else: ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>"><?php echo $i; ?></a>
+        <div style="margin-top: var(--space-lg);">
+            
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination" style="justify-content: center;">
+                    <?php if ($page > 1): ?>
+                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">‹ Previous</a>
                     <?php endif; ?>
-                <?php endfor; ?>
-                
-                <?php if ($end < $total_pages): ?>
-                    <?php if ($end < $total_pages - 1): ?><span>...</span><?php endif; ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $total_pages])); ?>"><?php echo $total_pages; ?></a>
-                <?php endif; ?>
-                
-                <?php if ($page < $total_pages): ?>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">Next ›</a>
-                <?php endif; ?>
+                    
+                    <?php
+                    $start = max(1, $page - 2);
+                    $end = min($total_pages, $page + 2);
+                    
+                    if ($start > 1): ?>
+                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => 1])); ?>">1</a>
+                        <?php if ($start > 2): ?><span>...</span><?php endif; ?>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <?php if ($i == $page): ?>
+                            <span class="current"><?php echo $i; ?></span>
+                        <?php else: ?>
+                            <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>"><?php echo $i; ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    
+                    <?php if ($end < $total_pages): ?>
+                        <?php if ($end < $total_pages - 1): ?><span>...</span><?php endif; ?>
+                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $total_pages])); ?>"><?php echo $total_pages; ?></a>
+                    <?php endif; ?>
+                    
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">Next ›</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Rows Per Page -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                <span style="color: var(--primary-text); white-space: nowrap; font-size: 0.875rem; line-height: 1.5; margin: 0;">Rows per page:</span>
+                <select id="perPageSelect" onchange="changePerPage(this.value)" style="
+                    padding: 0.25rem 0.5rem;
+                    border: 1px solid var(--border-color);
+                    border-radius: 0.25rem;
+                    background: var(--surface);
+                    color: var(--primary-text);
+                    font-size: 0.875rem;
+                    width: auto;
+                    min-width: 60px;
+                    line-height: 1.5;
+                    margin: 0;
+                    ">
+                    <option value="15" <?php echo $per_page == 15 ? 'selected' : ''; ?>>15</option>
+                    <option value="30" <?php echo $per_page == 30 ? 'selected' : ''; ?>>30</option>
+                    <option value="50" <?php echo $per_page == 50 ? 'selected' : ''; ?>>50</option>
+                </select>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
 
     <script>
@@ -1015,6 +1126,15 @@ try {
         document.getElementById('categoryFilter').value = '';
         document.getElementById('typeFilter').value = '';
         document.getElementById('conditionFilter').value = '';
+        // Keep the panel open after reset
+    }
+    
+    // Change per page function
+    function changePerPage(perPage) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('per_page', perPage);
+        urlParams.set('page', '1'); // Reset to first page
+        window.location.search = urlParams.toString();
     }
     
     // Load filter options
@@ -1053,6 +1173,9 @@ try {
                 })
                 .catch(console.error);
         });
+        
+        // Remove auto-submit from filter dropdowns - only submit when Apply Filters is clicked
+        // No event listeners on filter selects anymore
         
         // Submit search on Enter
         document.querySelector('#searchForm input[name="search"]').addEventListener('keypress', function(e) {
