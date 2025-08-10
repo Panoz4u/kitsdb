@@ -121,10 +121,10 @@ $user = getCurrentUser();
                 <p>Browse all jerseys with advanced filters</p>
             </a>
             
-            <a href="nations.php" class="action-card">
-                <div class="action-icon">🌍</div>
-                <h3>Manage Nations</h3>
-                <p>View and manage nations</p>
+            <a href="printlabels.php" class="action-card">
+                <div class="action-icon">🏷️</div>
+                <h3>Stampa etichette</h3>
+                <p>Genera e stampa etichette 70×36 mm (A4 – 24 per pagina)</p>
             </a>
         </div>
 
