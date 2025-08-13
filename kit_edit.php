@@ -736,6 +736,7 @@ $user = getCurrentUser();
                         populateColors(data);
                     } else if (type === 'photo_classifications') {
                         window.photoClassifications = data;
+                        console.log('Photo classifications loaded:', data);
                     } else {
                         populateSelect(type, data);
                     }
@@ -1077,6 +1078,14 @@ $user = getCurrentUser();
             </div>
         `;
         
+        // Force default selection after DOM creation
+        setTimeout(() => {
+            const select = fileItem.querySelector('select[name="photo_classifications[]"]');
+            if (select) {
+                select.value = '2'; // Force Web selection
+            }
+        }, 10);
+        
         return fileItem;
     }
 
@@ -1103,14 +1112,14 @@ $user = getCurrentUser();
         if (!window.photoClassifications) {
             return `
                 <option value="1">Match</option>
-                <option value="2">Web</option>
+                <option value="2" selected>Web</option>
                 <option value="3">Store</option>
                 <option value="4">Other</option>
             `;
         }
         
         return window.photoClassifications.map(item => 
-            `<option value="${item.id}">${item.name}</option>`
+            `<option value="${item.id}" ${item.id == 2 ? 'selected' : ''}>${item.name}</option>`
         ).join('');
     }
 

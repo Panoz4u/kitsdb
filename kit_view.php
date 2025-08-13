@@ -159,7 +159,7 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--primary-text);
-            margin: 0 0 0.5rem 0;
+            margin: 0 0 0.125rem 0;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
@@ -168,6 +168,14 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
+        }
+        
+        .kit-id {
+            color: var(--secondary-text);
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0.5rem 0 0 0;
+            opacity: 0.8;
         }
         
         .jersey-preview-large {
@@ -641,6 +649,7 @@ $numberTextColor = getContrastColor($kit['color2_hex']); // Number contrasts wit
                             - <?php echo htmlspecialchars($kit['season']); ?>
                         <?php endif; ?>
                     </p>
+                    <p class="kit-id">ID: <?php echo htmlspecialchars($kit['kit_id']); ?></p>
                 </div>
                 
                 <div>
