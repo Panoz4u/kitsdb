@@ -216,7 +216,12 @@ $user = getCurrentUser();
             
             @page {
                 size: A4 portrait;
-                margin: 0;
+                margin: 0 !important;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
             }
         }
         
@@ -231,7 +236,7 @@ $user = getCurrentUser();
             min-height: 297mm;
             margin: 0 auto 2rem;
             background: white;
-            padding: 5mm;
+            padding: 0;
             box-sizing: border-box;
             display: grid;
             grid-template-columns: repeat(3, 70mm);
@@ -303,12 +308,30 @@ $user = getCurrentUser();
             color: #666;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 1mm;
+        }
+        
+        .kit-id {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: bold;
+            font-size: 8px;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         @media print {
+            .labels-container {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
             .labels-page {
                 box-shadow: none;
-                margin: 0;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
                 break-inside: avoid;
                 page-break-after: always;
             }
@@ -428,6 +451,7 @@ $user = getCurrentUser();
                                     <div class="team-name"><?php echo htmlspecialchars($team_name); ?></div>
                                     <div class="jersey-type"><?php echo htmlspecialchars($label['jersey_type_name'] ?? 'N/A'); ?></div>
                                     <div class="nation-season"><?php echo htmlspecialchars($fifa_season); ?></div>
+                                    <div class="kit-id">ID: <?php echo htmlspecialchars($label['kit_id']); ?></div>
                                 </div>
                             </div>
                         <?php else: ?>
