@@ -10,16 +10,65 @@ $labels = [];
 $error = '';
 $success = '';
 
+// Function to parse specific IDs (ranges and comma-separated)
+function parseSpecificIds($input) {
+    $ids = [];
+    $input = trim($input);
+    
+    if (empty($input)) {
+        return $ids;
+    }
+    
+    // Split by comma first
+    $parts = explode(',', $input);
+    
+    foreach ($parts as $part) {
+        $part = trim($part);
+        
+        // Check if it's a range (contains dash)
+        if (strpos($part, '-') !== false) {
+            $range = explode('-', $part, 2);
+            $start = (int)trim($range[0]);
+            $end = (int)trim($range[1]);
+            
+            if ($start > 0 && $end > 0 && $start <= $end) {
+                for ($i = $start; $i <= $end; $i++) {
+                    $ids[] = $i;
+                }
+            }
+        } else {
+            // Single ID
+            $id = (int)$part;
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+    }
+    
+    // Remove duplicates and sort
+    $ids = array_unique($ids);
+    sort($ids);
+    
+    return $ids;
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $from_id = isset($_POST['from_id']) && $_POST['from_id'] !== '' ? (int)$_POST['from_id'] : null;
     $to_id = isset($_POST['to_id']) && $_POST['to_id'] !== '' ? (int)$_POST['to_id'] : null;
+    $specific_ids_input = $_POST['specific_ids'] ?? '';
     $sort_by = $_POST['sort_by'] ?? 'created_at_desc';
     $preview_limit = isset($_POST['preview_limit']) && $_POST['preview_limit'] !== '' ? (int)$_POST['preview_limit'] : 24;
+    $start_position = isset($_POST['start_position']) && $_POST['start_position'] !== '' ? (int)$_POST['start_position'] : 1;
+    
+    // Parse specific IDs if provided
+    $specific_ids = parseSpecificIds($specific_ids_input);
     
     // Validate inputs
-    if ($from_id === null && $to_id === null) {
-        $error = 'Inserire almeno un valore tra "Da ID" e "A ID"';
+    if ($from_id === null && $to_id === null && empty($specific_ids)) {
+        $error = 'Inserire almeno un valore tra "Da ID", "A ID" o "ID specifici"';
+    } elseif ($start_position < 1 || $start_position > 24) {
+        $error = 'La posizione di partenza deve essere tra 1 e 24';
     } else {
         try {
             $db = getDb();
@@ -34,14 +83,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $params = [];
             
-            if ($from_id !== null) {
-                $sql .= " AND k.kit_id >= :from_id";
-                $params['from_id'] = $from_id;
-            }
-            
-            if ($to_id !== null) {
-                $sql .= " AND k.kit_id <= :to_id";
-                $params['to_id'] = $to_id;
+            // Priority: if specific IDs are provided, use them; otherwise use range
+            if (!empty($specific_ids)) {
+                $placeholders = [];
+                foreach ($specific_ids as $index => $id) {
+                    $placeholder = ":id_" . $index;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $id;
+                }
+                $sql .= " AND k.kit_id IN (" . implode(',', $placeholders) . ")";
+            } else {
+                // Use range filters only if no specific IDs provided
+                if ($from_id !== null) {
+                    $sql .= " AND k.kit_id >= :from_id";
+                    $params['from_id'] = $from_id;
+                }
+                
+                if ($to_id !== null) {
+                    $sql .= " AND k.kit_id <= :to_id";
+                    $params['to_id'] = $to_id;
+                }
             }
             
             // Add sorting
@@ -66,15 +127,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $all_labels = $stmt->fetchAll();
             
             if (empty($all_labels)) {
-                $error = 'Nessuna etichetta trovata per i criteri selezionati';
+                if (!empty($specific_ids)) {
+                    $error = 'Nessuna etichetta trovata per gli ID specificati';
+                } else {
+                    $error = 'Nessuna etichetta trovata per i criteri selezionati';
+                }
             } else {
                 // Limit for preview if specified
                 if ($preview_limit > 0 && count($all_labels) > $preview_limit) {
                     $labels = array_slice($all_labels, 0, $preview_limit);
-                    $success = 'Anteprima di ' . count($labels) . ' etichette su ' . count($all_labels) . ' totali';
+                    if (!empty($specific_ids)) {
+                        $success = 'Anteprima di ' . count($labels) . ' etichette su ' . count($all_labels) . ' totali (ID specifici: ' . count($specific_ids) . ' richiesti)';
+                    } else {
+                        $success = 'Anteprima di ' . count($labels) . ' etichette su ' . count($all_labels) . ' totali';
+                    }
                 } else {
                     $labels = $all_labels;
-                    $success = 'Trovate ' . count($labels) . ' etichette';
+                    if (!empty($specific_ids)) {
+                        $success = 'Trovate ' . count($labels) . ' etichette per ' . count($specific_ids) . ' ID specifici';
+                    } else {
+                        $success = 'Trovate ' . count($labels) . ' etichette';
+                    }
                 }
             }
             
@@ -206,11 +279,15 @@ $user = getCurrentUser();
                 left: 0;
                 top: 0;
                 width: 100%;
+                z-index: 9999;
             }
             
             .filters-section,
             .page-header,
-            .alert {
+            .alert,
+            header,
+            .admin-header,
+            nav {
                 display: none !important;
             }
             
@@ -222,6 +299,13 @@ $user = getCurrentUser();
             html, body {
                 margin: 0 !important;
                 padding: 0 !important;
+                background: white !important;
+            }
+            
+            /* Ensure container doesn't interfere */
+            .container {
+                all: unset !important;
+                display: block !important;
             }
         }
         
@@ -349,6 +433,8 @@ $user = getCurrentUser();
         <div class="page-header">
             <h1>Stampa etichette</h1>
             <p>Genera e stampa etichette adesive 70×36 mm per kit da calcio. Le etichette sono organizzate in una griglia 3×8 su foglio A4 (24 etichette per pagina) con QR code a sinistra e informazioni del kit a destra.</p>
+            <p><strong>Modalità di selezione:</strong> Utilizza intervalli (Da/A ID), ID specifici con virgole e trattini (es: 1,5,76,81-85), o una combinazione di entrambi.</p>
+            <p><strong>Posizioni griglia:</strong> Le etichette sono numerate da 1 a 24 in una griglia 3×8. Posizione 1 = prima riga prima colonna, posizione 4 = seconda riga prima colonna, posizione 8 = terza riga seconda colonna.</p>
         </div>
 
         <!-- Filters Section -->
@@ -377,6 +463,16 @@ $user = getCurrentUser();
                                value="<?php echo isset($_POST['to_id']) ? htmlspecialchars($_POST['to_id']) : ''; ?>">
                     </div>
                     
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="specific_ids">ID specifici (es: 1,5,76,81-85):</label>
+                        <input type="text" id="specific_ids" name="specific_ids" 
+                               placeholder="Esempio: 1,5,76,81-85"
+                               value="<?php echo isset($_POST['specific_ids']) ? htmlspecialchars($_POST['specific_ids']) : ''; ?>">
+                        <small style="color: var(--secondary-text); font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                            Inserire ID singoli separati da virgole e/o intervalli con trattino. Se specificato, ignora "Da ID" e "A ID".
+                        </small>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="sort_by">Ordinamento:</label>
                         <select id="sort_by" name="sort_by">
@@ -391,6 +487,15 @@ $user = getCurrentUser();
                         <label for="preview_limit">Anteprima quantità:</label>
                         <input type="number" id="preview_limit" name="preview_limit" min="1" max="1000" 
                                value="<?php echo isset($_POST['preview_limit']) ? htmlspecialchars($_POST['preview_limit']) : '24'; ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="start_position">Stampa da posizione:</label>
+                        <input type="number" id="start_position" name="start_position" min="1" max="24" 
+                               value="<?php echo isset($_POST['start_position']) ? htmlspecialchars($_POST['start_position']) : '1'; ?>">
+                        <small style="color: var(--secondary-text); font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                            Posizione nella griglia 3×8 (1=prima etichetta in alto a sinistra, 8=terza fila seconda etichetta)
+                        </small>
                     </div>
                 </div>
                 
@@ -408,17 +513,26 @@ $user = getCurrentUser();
             <div class="labels-container">
                 <?php
                 $labels_per_page = 24;
-                $total_pages = ceil(count($labels) / $labels_per_page);
+                $start_pos = isset($_POST['start_position']) ? (int)$_POST['start_position'] - 1 : 0; // Convert to 0-based index
+                
+                // Calculate total positions needed (start position + labels)
+                $total_positions = $start_pos + count($labels);
+                $total_pages = ceil($total_positions / $labels_per_page);
+                
+                $label_index = 0; // Index for actual labels array
                 
                 for ($page = 0; $page < $total_pages; $page++):
-                    $page_labels = array_slice($labels, $page * $labels_per_page, $labels_per_page);
                 ?>
                     <div class="labels-page">
                         <?php 
-                        // Fill the page with labels (up to 24)
+                        // Fill the page with labels (up to 24 positions)
                         for ($i = 0; $i < $labels_per_page; $i++):
-                            if (isset($page_labels[$i])):
-                                $label = $page_labels[$i];
+                            $global_position = $page * $labels_per_page + $i;
+                            
+                            // Check if this position should have a label
+                            if ($global_position >= $start_pos && $label_index < count($labels)):
+                                $label = $labels[$label_index];
+                                $label_index++;
                                 $qr_image_url = generateKitQRCode($label['kit_id'], getBaseURL(), 80); // QR più piccolo
                                 
                                 // Tronca il nome della squadra se troppo lungo
@@ -455,6 +569,7 @@ $user = getCurrentUser();
                                 </div>
                             </div>
                         <?php else: ?>
+                            <!-- Empty position (before start or after end) -->
                             <div class="label label-empty"></div>
                         <?php 
                             endif;
