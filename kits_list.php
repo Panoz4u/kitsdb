@@ -26,6 +26,7 @@ $brand_filter = $_GET['brand'] ?? '';
 $category_filter = $_GET['category'] ?? '';
 $type_filter = $_GET['type'] ?? '';
 $condition_filter = $_GET['condition'] ?? '';
+$nation_filter = $_GET['nation'] ?? '';
 $view_mode = $_GET['view'] ?? 'list'; // cards or list
 $sort_by = $_GET['sort'] ?? 'created_at';
 $sort_direction = $_GET['dir'] ?? 'desc';
@@ -67,6 +68,11 @@ try {
     if (!empty($condition_filter)) {
         $where_conditions[] = "k.condition_id = ?";
         $params[] = $condition_filter;
+    }
+    
+    if (!empty($nation_filter)) {
+        $where_conditions[] = "t.nation_id = ?";
+        $params[] = $nation_filter;
     }
     
     $where_clause = implode(' AND ', $where_conditions);
@@ -756,6 +762,7 @@ $user = getCurrentUser();
                     <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_filter); ?>">
                     <input type="hidden" name="type" value="<?php echo htmlspecialchars($type_filter); ?>">
                     <input type="hidden" name="condition" value="<?php echo htmlspecialchars($condition_filter); ?>">
+                    <input type="hidden" name="nation" value="<?php echo htmlspecialchars($nation_filter); ?>">
                     <input type="text" 
                            name="search" 
                            value="<?php echo htmlspecialchars($search); ?>" 
@@ -784,6 +791,7 @@ $user = getCurrentUser();
             <form method="GET" id="filterForm">
                 <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
                 <input type="hidden" name="view" value="<?php echo htmlspecialchars($view_mode); ?>">
+                <input type="hidden" name="nation" value="<?php echo htmlspecialchars($nation_filter); ?>">
                 
                 <div class="filters-grid">
                     <div class="filter-group">

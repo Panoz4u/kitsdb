@@ -1,11 +1,7 @@
 <?php
-require_once 'auth.php';
 require_once 'config.php';
 
-// Requires admin authentication
-requireAdmin();
-
-// Get database statistics and leaderboards
+// Get database statistics and leaderboards (no auth required for guest view)
 try {
     $db = getDb();
     
@@ -63,15 +59,13 @@ try {
     $kit_count = $issued_count = $worn_count = 0;
     $top_teams = $top_nations = $oldest_kits = $top_brands = [];
 }
-
-$user = getCurrentUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - KITSDB</title>
+    <title>KITSDB - Football Kit Collection</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .leaderboard-grid {
@@ -201,11 +195,17 @@ $user = getCurrentUser();
             font-size: 0.875rem;
         }
         
-        .stats-row {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: var(--space-md);
-            margin-top: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .stat-card {
@@ -214,6 +214,14 @@ $user = getCurrentUser();
             border-radius: 0.5rem;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
         
         .stat-number {
@@ -228,66 +236,81 @@ $user = getCurrentUser();
             color: var(--secondary-text);
             font-size: 1rem;
             font-weight: 500;
+            margin-bottom: 0.75rem;
         }
         
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-md);
+        .stat-view-all {
+            display: block;
+            color: var(--action-red);
+            font-size: 0.75rem;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 0.5rem;
         }
         
-        .action-card {
-            background: var(--surface);
-            padding: 1.5rem;
-            border-radius: 0.5rem;
+        .stat-view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .welcome-section {
             text-align: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            margin-bottom: var(--space-lg);
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
-        .action-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-        }
-        
-        .action-icon {
-            font-size: 2rem;
+        .welcome-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--highlight-yellow);
             margin-bottom: 1rem;
         }
         
-        
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
-    <?php include 'includes/admin_header.php'; ?>
+    <?php include 'includes/public_header.php'; ?>
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Quick Actions -->
-        <div class="quick-actions" style="margin-top: var(--space-lg);">
-            <a href="kit_add.php" class="action-card">
-                <div class="action-icon">➕</div>
-                <h3>Add New Jersey</h3>
-                <p>Add a new jersey to the collection</p>
-            </a>
-            
-            <a href="kits_list.php" class="action-card">
-                <div class="action-icon">📋</div>
-                <h3>View List</h3>
-                <p>Browse all jerseys with advanced filters</p>
-            </a>
-            
-            <a href="printlabels.php" class="action-card">
-                <div class="action-icon">🏷️</div>
-                <h3>Stampa etichette</h3>
-                <p>Genera e stampa etichette 70×36 mm (A4 – 24 per pagina)</p>
-            </a>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome to KITSDB</h1>
+            <p class="welcome-subtitle">Explore our collection of football jerseys from around the world</p>
         </div>
-
-        <!-- Overview Section -->
-        <h2 style="color: var(--highlight-yellow); margin: var(--space-lg) 0;">Leaderboards</h2>
+        
+        <!-- Kit Type Statistics -->
+        <h2 style="color: var(--highlight-yellow); margin: var(--space-lg) 0;">Kit Types</h2>
+        <div class="stats-grid">
+            <div class="stat-card" onclick="window.location.href='kits_browse.php'">
+                <div class="stat-number"><?php echo number_format($kit_count); ?></div>
+                <div class="stat-label">Total Kits</div>
+                <a href="kits_browse.php" class="stat-view-all">View All →</a>
+            </div>
+            
+            <div class="stat-card" onclick="window.location.href='kits_browse.php?category=2'">
+                <div class="stat-number"><?php echo number_format($issued_count); ?></div>
+                <div class="stat-label">Issued Kits</div>
+                <a href="kits_browse.php?category=2" class="stat-view-all">View All →</a>
+            </div>
+            
+            <div class="stat-card" onclick="window.location.href='kits_browse.php?category=1'">
+                <div class="stat-number"><?php echo number_format($worn_count); ?></div>
+                <div class="stat-label">Worn Kits</div>
+                <a href="kits_browse.php?category=1" class="stat-view-all">View All →</a>
+            </div>
+        </div>
         
         <!-- Leaderboards -->
+        <h2 style="color: var(--highlight-yellow); margin: var(--space-lg) 0;">Leaderboards</h2>
         <div class="leaderboard-grid">
             <!-- Top Teams -->
             <div class="leaderboard-card">
@@ -311,7 +334,7 @@ $user = getCurrentUser();
                         </li>
                     <?php endforeach; ?>
                 </ul>
-                <a href="teams_leaderboard.php" class="view-more">View More →</a>
+                <a href="teams_leaderboard_guest.php" class="view-more">View More →</a>
             </div>
             
             <!-- Top Nations -->
@@ -333,7 +356,7 @@ $user = getCurrentUser();
                         </li>
                     <?php endforeach; ?>
                 </ul>
-                <a href="nations_leaderboard.php" class="view-more">View More →</a>
+                <a href="nations_leaderboard_guest.php" class="view-more">View More →</a>
             </div>
             
             <!-- Oldest Kits -->
@@ -363,7 +386,7 @@ $user = getCurrentUser();
                         </li>
                     <?php endforeach; ?>
                 </ul>
-                <a href="oldest_kits.php" class="view-more">View More →</a>
+                <a href="oldest_kits_guest.php" class="view-more">View More →</a>
             </div>
             
             <!-- Top Brands -->
@@ -382,26 +405,7 @@ $user = getCurrentUser();
                         </li>
                     <?php endforeach; ?>
                 </ul>
-                <a href="brands_leaderboard.php" class="view-more">View More →</a>
-            </div>
-        </div>
-        
-        <!-- Statistics Row -->
-        <h2 style="color: var(--highlight-yellow); margin: var(--space-lg) 0;">Statistics</h2>
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($kit_count); ?></div>
-                <div class="stat-label">Total Kits</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($issued_count); ?></div>
-                <div class="stat-label">Issued Kits</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($worn_count); ?></div>
-                <div class="stat-label">Worn Kits</div>
+                <a href="brands_leaderboard_guest.php" class="view-more">View More →</a>
             </div>
         </div>
     </div>

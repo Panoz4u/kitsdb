@@ -185,7 +185,7 @@
             <a href="login.php" class="welcome-btn btn-primary">
                 Login
             </a>
-            <a href="kits_browse.php" class="welcome-btn btn-secondary">
+            <a href="dashboard_guest.php" class="welcome-btn btn-secondary">
                 View Kits
             </a>
         </div>
