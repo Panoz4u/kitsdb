@@ -99,7 +99,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <nav class="nav-menu">
             <a href="kits_list.php" class="nav-link"<?php echo $current_page === 'kits_list.php' ? ' style="color: var(--highlight-yellow);"' : ''; ?>>Jersey List</a>
             <a href="kit_add.php" class="nav-link"<?php echo $current_page === 'kit_add.php' ? ' style="color: var(--highlight-yellow);"' : ''; ?>>Add Jersey</a>
-            <a href="nations.php" class="nav-link"<?php echo $current_page === 'nations.php' ? ' style="color: var(--highlight-yellow);"' : ''; ?>>Nations</a>
+            <a href="kits_sort.php" class="nav-link"<?php echo $current_page === 'kits_sort.php' ? ' style="color: var(--highlight-yellow);"' : ''; ?>>Sort</a>
             <span class="nav-user"><?php echo htmlspecialchars($user['username']); ?></span>
             <form method="POST" action="logout.php" style="display: inline;">
                 <button type="submit" class="logout-btn">Logout</button>
@@ -117,7 +117,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="mobile-menu" id="mobileMenu">
             <a href="kits_list.php" class="mobile-nav-link">Jersey List</a>
             <a href="kit_add.php" class="mobile-nav-link">Add Jersey</a>
-            <a href="nations.php" class="mobile-nav-link">Nations</a>
+            <a href="kits_sort.php" class="mobile-nav-link">Sort</a>
             <form method="POST" action="logout.php">
                 <button type="submit" class="mobile-logout-btn">Logout</button>
             </form>
