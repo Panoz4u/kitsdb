@@ -2,8 +2,9 @@
 // Script per creare l'utente admin
 require_once 'config.php';
 
-$username = 'admin';
-$password = 'YOUR_ADMIN_PASSWORD_HERE';
+// Get credentials from environment variables
+$username = env('ADMIN_USERNAME', 'admin');
+$password = env('ADMIN_PASSWORD');
 
 // Genera hash della password
 $cost = 10;
@@ -39,8 +40,8 @@ try {
         
         if ($result) {
             echo "✓ Utente admin creato con successo!\n";
-            echo "Username: admin\n";
-            echo "Password: YOUR_ADMIN_PASSWORD_HERE\n";
+            echo "Username: " . $username . "\n";
+            echo "Password: [configured in .env file]\n";
         } else {
             echo "✗ Errore durante la creazione dell'utente\n";
         }

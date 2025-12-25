@@ -1,10 +1,16 @@
 <?php
-// config.php
-define('DB_HOST', 'YOUR_ARUBA_HOST_HERE');
-define('DB_PORT', '3306');
-define('DB_NAME', 'YOUR_ARUBA_DB_NAME_HERE');  // il nome che hai creato
-define('DB_USER', 'YOUR_ARUBA_DB_USER_HERE');          // l’utente MySQL
-define('DB_PASS', 'YOUR_ARUBA_PASSWORD_HERE');     // la password
+// config_aruba.php - Alternative Aruba hosting configuration
+require_once __DIR__ . '/env_loader.php';
+
+// Load environment variables
+loadEnv();
+
+// Database configuration from environment variables (Aruba)
+define('DB_HOST', env('DB_ARUBA_HOST'));
+define('DB_PORT', env('DB_ARUBA_PORT', '3306'));
+define('DB_NAME', env('DB_ARUBA_NAME'));
+define('DB_USER', env('DB_ARUBA_USER'));
+define('DB_PASS', env('DB_ARUBA_PASS'));
 
 function getDb() {
     $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8';

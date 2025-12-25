@@ -1,0 +1,19 @@
+# Environment variables (contains sensitive credentials)
+.env
+
+# Upload directories
+uploads/
+upload_tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log

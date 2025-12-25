@@ -1,6 +1,13 @@
 <?php
 // gen_hash.php – genera un hash bcrypt con crypt() e openssl_random_pseudo_bytes()
-$password = 'YOUR_ADMIN_PASSWORD_HERE';  // cambia qui la tua password
+require_once 'env_loader.php';
+loadEnv();
+
+$password = env('ADMIN_PASSWORD');
+
+if (!$password) {
+    die("Error: ADMIN_PASSWORD not configured in .env file\n");
+}
 
 // 1) Imposta il costo (tra 4 e 31; 10 è un buon compromesso)
 $cost = 10;
