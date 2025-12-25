@@ -1,5 +1,7 @@
 # Environment variables (contains sensitive credentials)
 .env
+.env.production
+.env.local
 
 # Upload directories
 uploads/
@@ -17,3 +19,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test and temporary files
+passwords_to_remove.txt
+expressions.txt
+test_*.php
+config_local_dev.php
+testconn_aruba.php
