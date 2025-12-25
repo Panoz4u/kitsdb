@@ -3,7 +3,12 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(find:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Read(/j:\\panoz\\D3\\Internal\\FX\\kitdb/**)",
+      "Bash(git config:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

@@ -186,7 +186,7 @@ $user = getCurrentUser();
                         <tbody>
                             <?php foreach ($kits as $kit): ?>
                                 <tr>
-                                    <td class="kit-id">#<?php echo $kit['kit_id']; ?></td>
+                                    <td class="kit-id" <?php if ($kit['kit_id'] >= 546): ?>style="color: var(--action-red);"<?php endif; ?>>#<?php echo $kit['kit_id']; ?></td>
                                     <td><?php echo htmlspecialchars($kit['nation_name'] ?: '-'); ?></td>
                                     <td><?php echo htmlspecialchars($kit['team_name'] ?: '-'); ?></td>
                                     <td><?php echo htmlspecialchars($kit['season'] ?: '-'); ?></td>

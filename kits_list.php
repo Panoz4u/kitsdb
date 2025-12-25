@@ -44,9 +44,9 @@ try {
     
     // Text search filter
     if (!empty($search)) {
-        $where_conditions[] = "(t.name LIKE ? OR k.player_name LIKE ? OR k.season LIKE ? OR k.number LIKE ?)";
+        $where_conditions[] = "(t.name LIKE ? OR k.player_name LIKE ? OR k.season LIKE ? OR k.number LIKE ? OR k.kit_id LIKE ?)";
         $searchTerm = '%' . $search . '%';
-        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
     }
     
     // Dropdown filters
@@ -766,7 +766,7 @@ $user = getCurrentUser();
                     <input type="text" 
                            name="search" 
                            value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="Search team, player, season...">
+                           placeholder="Search team, player, season, ID...">
                 </form>
             </div>
             
